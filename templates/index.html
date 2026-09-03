@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SHIFT//HANDOVER — Automated Shift Handover Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- LEFT SIDEBAR -->
+    <aside class="sidebar">
+      <div class="brand-container">
+        <div class="brand-logo">
+          <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+          </svg>
+          <div class="brand-text">
+            <span class="brand-title">SHIFT<span class="accent-slash">//</span>HANDOVER</span>
+            <span class="brand-tag">NOC INTELLIGENCE</span>
+          </div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a href="#generator-section" class="nav-item active">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect width="18" height="18" x="3" y="3" rx="2"/>
+            <path d="m9 12 2 2 4-4"/>
+          </svg>
+          <span>Shift Generator</span>
+        </a>
+        <a href="#sources-section" class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <ellipse cx="12" cy="5" rx="9" ry="3"/>
+            <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+            <path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3"/>
+          </svg>
+          <span>Data Sources</span>
+        </a>
+        <a href="#results-section" class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" x2="8" y1="13" y2="13"/>
+            <line x1="16" x2="8" y1="17" y2="17"/>
+          </svg>
+          <span>Handover Report</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="system-status-badge">
+          <span class="status-pulse-dot"></span>
+          <span class="status-text" id="sidebar-status-text">SYSTEM READY</span>
+        </div>
+        <div class="live-clock" id="live-clock">--:--:-- UTC</div>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+      <!-- HEADER -->
+      <header class="top-header">
+        <div class="header-titles">
+          <h1 class="page-title">SHIFT<span class="text-accent">//</span>HANDOVER</h1>
+          <p class="page-subtitle">Automated Shift Handover Intelligence & Deduplication Engine</p>
+        </div>
+        <div class="header-actions">
+          <!-- Operator Profile Pill -->
+          <div class="user-profile-pill" id="user-profile-pill">
+            <div class="user-avatar" id="user-avatar">AR</div>
+            <div class="user-details">
+              <span class="user-name" id="user-name">Alex Rivera</span>
+              <span class="user-role" id="user-role">Lead On-Call SRE</span>
+            </div>
+            <a href="/login" class="btn-logout" title="Switch Operator / Logout" id="btn-logout">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                <polyline points="16 17 21 12 16 7"/>
+                <line x1="21" x2="9" y1="12" y2="12"/>
+              </svg>
+            </a>
+          </div>
+
+          <div class="status-pill ready" id="header-status-pill">
+            <span class="pulse-indicator"></span>
+            <span id="header-status-label">ONLINE & GROUNDED</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- DATA SOURCES STATUS BAR -->
+      <section id="sources-section" class="section-container">
+        <div class="section-header">
+          <h2 class="section-heading">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="heading-icon">
+              <ellipse cx="12" cy="5" rx="9" ry="3"/>
+              <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+              <path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3"/>
+            </svg>
+            Live Data Source Connections
+          </h2>
+          <button class="btn-secondary btn-sm" id="btn-refresh-sources">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+              <path d="M21 3v5h-5"/>
+              <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+              <path d="M3 21v-5h5"/>
+            </svg>
+            Refresh Status
+          </button>
+        </div>
+
+        <div class="sources-grid" id="sources-grid">
+          <!-- Card 1: Ticketing -->
+          <div class="source-card" id="card-source-ticketing">
+            <div class="source-card-header">
+              <div class="source-name-wrap">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="source-icon">
+                  <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/>
+                  <path d="M13 5v2"/>
+                  <path d="M13 17v2"/>
+                  <path d="M13 11v2"/>
+                </svg>
+                <span class="source-title">Ticketing Feed (Jira/ServiceNow)</span>
+              </div>
+              <span class="source-status-badge connected" id="ticket-badge">● Connected</span>
+            </div>
+            <div class="source-meta">
+              <div class="meta-item">
+                <span class="meta-label">Records Available:</span>
+                <span class="meta-value" id="ticket-count">--</span>
+              </div>
+              <div class="meta-item">
+                <span class="meta-label">Source Path:</span>
+                <span class="meta-value code">data/tickets.json</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 2: Incident Management -->
+          <div class="source-card" id="card-source-incident">
+            <div class="source-card-header">
+              <div class="source-name-wrap">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="source-icon">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                  <line x1="12" y1="9" x2="12" y2="13"/>
+                  <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+                <span class="source-title">Incident Stream (PagerDuty/Alerts)</span>
+              </div>
+              <span class="source-status-badge connected" id="incident-badge">● Connected</span>
+            </div>
+            <div class="source-meta">
+              <div class="meta-item">
+                <span class="meta-label">Records Available:</span>
+                <span class="meta-value" id="incident-count">--</span>
+              </div>
+              <div class="meta-item">
+                <span class="meta-label">Source Path:</span>
+                <span class="meta-value code">data/incidents.json</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 3: Enterprise Database (PostgreSQL / Supabase) -->
+          <div class="source-card db-card" id="card-source-db">
+            <div class="source-card-header">
+              <div class="source-name-wrap">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="source-icon">
+                  <ellipse cx="12" cy="5" rx="9" ry="3"/>
+                  <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+                  <path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3"/>
+                </svg>
+                <span class="source-title">Database (PostgreSQL / Supabase)</span>
+              </div>
+              <span class="source-status-badge connected" id="db-badge">● Connected</span>
+            </div>
+            <div class="source-meta">
+              <div class="meta-item">
+                <span class="meta-label">Engine / Target:</span>
+                <span class="meta-value code" id="db-file">PostgreSQL @ Supabase</span>
+              </div>
+              <div class="meta-item">
+                <span class="meta-label">Tickets / Incidents:</span>
+                <span class="meta-value" id="db-counts">-- / --</span>
+              </div>
+              <div class="meta-item">
+                <span class="meta-label">Stored Reports:</span>
+                <span class="meta-value" id="db-reports-count">--</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SHIFT CONFIGURATION & GENERATOR -->
+      <section id="generator-section" class="section-container">
+        <div class="card config-card">
+          <div class="config-header">
+            <h2 class="config-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="heading-icon">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+              </svg>
+              Define Shift Window
+            </h2>
+            <span class="config-helper">Events strictly filtered to [shift_start, shift_end) interval</span>
+          </div>
+
+          <!-- Quick Shift Presets -->
+          <div class="presets-row">
+            <span class="presets-label">Quick Presets:</span>
+            <div class="presets-pills">
+              <button type="button" class="preset-pill active" data-start="2026-09-03T17:00" data-end="2026-09-03T20:00" data-tz="+05:30">
+                Primary Demo Shift (17:00 – 20:00 IST)
+              </button>
+              <button type="button" class="preset-pill" data-start="2026-09-03T20:00" data-end="2026-09-04T04:00" data-tz="+05:30">
+                Night Shift (20:00 – 04:00 IST)
+              </button>
+              <button type="button" class="preset-pill" data-start="2026-09-04T04:00" data-end="2026-09-04T12:00" data-tz="+05:30">
+                Early Morning (04:00 – 12:00 IST)
+              </button>
+              <button type="button" class="preset-pill" data-start="2026-09-04T12:00" data-end="2026-09-04T16:00" data-tz="+05:30">
+                Blocker Shift (12:00 – 16:00 IST)
+              </button>
+              <button type="button" class="preset-pill" data-start="2026-09-04T16:00" data-end="2026-09-04T18:00" data-tz="+05:30">
+                Quiet Shift (16:00 – 18:00 IST)
+              </button>
+              <button type="button" class="preset-pill" data-start="2026-09-05T00:00" data-end="2026-09-05T04:00" data-tz="+05:30">
+                Empty Window (Nothing to report)
+              </button>
+            </div>
+          </div>
+
+          <form id="shift-form" class="shift-form">
+            <div class="inputs-grid">
+              <div class="input-group">
+                <label for="shift-start" class="input-label">Shift Start (Local / ISO)</label>
+                <input type="datetime-local" id="shift-start" class="text-input" value="2026-09-03T17:00" required>
+              </div>
+
+              <div class="input-group">
+                <label for="shift-end" class="input-label">Shift End (Local / ISO)</label>
+                <input type="datetime-local" id="shift-end" class="text-input" value="2026-09-03T20:00" required>
+              </div>
+
+              <div class="input-group tz-group">
+                <label for="shift-tz" class="input-label">Timezone Offset</label>
+                <select id="shift-tz" class="select-input">
+                  <option value="+05:30" selected>IST (UTC+05:30)</option>
+                  <option value="+00:00">UTC (+00:00)</option>
+                  <option value="-04:00">EDT (UTC-04:00)</option>
+                  <option value="-07:00">PDT (UTC-07:00)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn-primary" id="btn-generate">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon">
+                  <polygon points="5 3 19 12 5 21 5 3"/>
+                </svg>
+                <span>GENERATE HANDOVER</span>
+              </button>
+
+              <button type="button" class="btn-secondary" id="btn-dummy-test">
+                <span>Run Dummy Pipeline Test</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- GENERATION PROGRESS PIPELINE -->
+      <section id="progress-section" class="section-container progress-container hidden">
+        <div class="card progress-card">
+          <div class="progress-title-row">
+            <div class="progress-spinner"></div>
+            <span class="progress-title" id="progress-status-msg">Initiating pipeline execution...</span>
+          </div>
+
+          <div class="pipeline-steps-bar">
+            <div class="pipe-step" id="step-fetch">
+              <span class="step-num">1</span>
+              <span class="step-label">Fetch Activity</span>
+            </div>
+            <div class="pipe-connector"></div>
+            <div class="pipe-step" id="step-filter">
+              <span class="step-num">2</span>
+              <span class="step-label">Shift Window Filter</span>
+            </div>
+            <div class="pipe-connector"></div>
+            <div class="pipe-step" id="step-dedup">
+              <span class="step-num">3</span>
+              <span class="step-label">Deduplicate & Collapse</span>
+            </div>
+            <div class="pipe-connector"></div>
+            <div class="pipe-step" id="step-classify">
+              <span class="step-num">4</span>
+              <span class="step-label">4-Section Classify</span>
+            </div>
+            <div class="pipe-connector"></div>
+            <div class="pipe-step" id="step-publish">
+              <span class="step-num">5</span>
+              <span class="step-label">Publish Single PDF</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- RESULTS SECTION -->
+      <section id="results-section" class="section-container results-container hidden">
+        <!-- Results Header & Summary Stats -->
+        <div class="results-top-bar">
+          <div>
+            <h2 class="results-main-title">Handover Intelligence Report</h2>
+            <p class="results-subtitle" id="results-window-label">Shift: 03 Sep 2026, 17:00 – 20:00 IST</p>
+          </div>
+          <div class="export-btn-group">
+            <button class="btn-secondary" id="btn-view-pdf">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+              View PDF Preview
+            </button>
+            <a href="#" class="btn-primary" id="btn-download-pdf" target="_blank" download>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" x2="12" y1="15" y2="3"/>
+              </svg>
+              Download PDF Report
+            </a>
+          </div>
+        </div>
+
+        <!-- Metric Counter Grid -->
+        <div class="metrics-grid">
+          <div class="metric-card completed-metric">
+            <span class="metric-label">COMPLETED</span>
+            <span class="metric-val" id="cnt-completed">0</span>
+          </div>
+          <div class="metric-card in-progress-metric">
+            <span class="metric-label">IN PROGRESS</span>
+            <span class="metric-val" id="cnt-in-progress">0</span>
+          </div>
+          <div class="metric-card blockers-metric">
+            <span class="metric-label">BLOCKERS / ESCALATIONS</span>
+            <span class="metric-val" id="cnt-blockers">0</span>
+          </div>
+          <div class="metric-card watch-metric">
+            <span class="metric-label">WATCH-LIST</span>
+            <span class="metric-val" id="cnt-watch">0</span>
+          </div>
+        </div>
+
+        <!-- 4 Core Handover Sections -->
+        <div class="sections-accordion">
+          
+          <!-- SECTION 1: COMPLETED -->
+          <div class="handover-section-card" id="sec-completed-card">
+            <div class="handover-sec-header completed-header">
+              <div class="sec-title-wrap">
+                <span class="sec-icon">✓</span>
+                <span class="sec-title">COMPLETED</span>
+                <span class="sec-badge" id="badge-completed">0 items</span>
+              </div>
+            </div>
+            <div class="handover-sec-body" id="list-completed">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <!-- SECTION 2: IN PROGRESS -->
+          <div class="handover-section-card" id="sec-in-progress-card">
+            <div class="handover-sec-header in-progress-header">
+              <div class="sec-title-wrap">
+                <span class="sec-icon">◐</span>
+                <span class="sec-title">IN PROGRESS</span>
+                <span class="sec-badge" id="badge-in-progress">0 items</span>
+              </div>
+            </div>
+            <div class="handover-sec-body" id="list-in-progress">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <!-- SECTION 3: BLOCKERS / ESCALATIONS -->
+          <div class="handover-section-card" id="sec-blockers-card">
+            <div class="handover-sec-header blockers-header">
+              <div class="sec-title-wrap">
+                <span class="sec-icon">⚠</span>
+                <span class="sec-title">BLOCKERS / ESCALATIONS</span>
+                <span class="sec-badge" id="badge-blockers">0 items</span>
+              </div>
+            </div>
+            <div class="handover-sec-body" id="list-blockers">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <!-- SECTION 4: WATCH-LIST -->
+          <div class="handover-section-card" id="sec-watch-card">
+            <div class="handover-sec-header watch-header">
+              <div class="sec-title-wrap">
+                <span class="sec-icon">◉</span>
+                <span class="sec-title">WATCH-LIST</span>
+                <span class="sec-badge" id="badge-watch">0 items</span>
+              </div>
+            </div>
+            <div class="handover-sec-body" id="list-watch">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- HANDOVER HISTORY SECTION -->
+      <section id="history-section" class="section-container">
+        <div class="section-header">
+          <h2 class="section-heading">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="heading-icon">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+            HANDOVER HISTORY
+          </h2>
+          <button class="btn-secondary btn-sm" id="btn-refresh-history">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+              <path d="M21 3v5h-5"/>
+              <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+              <path d="M3 21v-5h5"/>
+            </svg>
+            Refresh History
+          </button>
+        </div>
+
+        <div class="history-table-container">
+          <table class="history-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Shift Window</th>
+                <th>Total</th>
+                <th>Completed</th>
+                <th>In Progress</th>
+                <th>Blockers</th>
+                <th>Watch-list</th>
+                <th>Generated At</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="history-table-body">
+              <tr>
+                <td colspan="9" class="history-empty">Loading previous handover reports...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- PDF PREVIEW MODAL -->
+      <div class="modal-overlay hidden" id="pdf-modal">
+        <div class="modal-card">
+          <div class="modal-header">
+            <h3 class="modal-title">Official PDF Report Preview</h3>
+            <button class="modal-close-btn" id="modal-close">&times;</button>
+          </div>
+          <div class="modal-body">
+            <iframe id="pdf-frame" src="" class="pdf-viewer-frame"></iframe>
+          </div>
+          <div class="modal-footer">
+            <a href="#" class="btn-primary" id="modal-download-link" target="_blank" download>Download PDF File</a>
+            <button class="btn-secondary" id="modal-dismiss-btn">Close</button>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+{
+  "name": "SHIFT//HANDOVER",
+  "short_name": "ShiftHandover",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#070B0A",
+  "theme_color": "#00E5A0",
+  "description": "Automated Shift Handover Intelligence Flutter Frontend",
+  "orientation": "portrait-primary",
+  "prefer_related_applications": false
+}

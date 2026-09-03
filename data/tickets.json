@@ -1,0 +1,162 @@
+[
+  {
+    "source": "Ticketing",
+    "record_id": "TCK-1001",
+    "timestamp": "2026-09-03T17:10:00+05:30",
+    "summary": "Payment API timeout issue reported by checkout team",
+    "status": "in_progress",
+    "priority": "P1",
+    "assignee": "Alex Rivera",
+    "details": "Investigating connection pool exhaustion on payment-v2 pod cluster."
+  },
+  {
+    "source": "Ticketing",
+    "record_id": "TCK-1001",
+    "timestamp": "2026-09-03T18:00:00+05:30",
+    "summary": "Payment API timeout patch tested in staging",
+    "status": "in_progress",
+    "priority": "P1",
+    "assignee": "Alex Rivera",
+    "details": "Hotfix v2.14.2 applied to staging; throughput increased by 40%."
+  },
+  {
+    "source": "Ticketing",
+    "record_id": "TCK-1001",
+    "timestamp": "2026-09-03T18:45:00+05:30",
+    "summary": "Payment API timeout issue resolved and deployed",
+    "status": "completed",
+    "priority": "P1",
+    "assignee": "Alex Rivera",
+    "details": "Production deployment verified. Latency back to baseline 85ms."
+  },
+  {
+    "source": "Ticketing",
+    "record_id": "TCK-1002",
+    "timestamp": "2026-09-03T17:20:00+05:30",
+    "summary": "Migrate Stripe webhook endpoints to v3 payload schema",
+    "status": "in_progress",
+    "priority": "P3",
+    "assignee": "Sam Chen",
+    "details": "Signature verification middleware updated for HMAC-SHA256."
+  },
+  {
+    "source": "Ticketing",
+    "record_id": "TCK-1002",
+    "timestamp": "2026-09-03T19:10:00+05:30",
+    "summary": "Migrate Stripe webhook endpoints to v3 payload schema",
+    "status": "in_progress",
+    "priority": "P3",
+    "assignee": "Sam Chen",
+    "details": "PR #482 submitted for security review; sandbox tests green."
+  },
+  {
+    "source": "Ticketing",
+    "record_id": "TCK-1003",
+    "timestamp": "2026-09-03T17:45:00+05:30",
+    "summary": "Database replication lag spike in EU-West cluster",
+    "status": "blocked",
+    "priority": "P1",
+    "assignee": "Elena Rostova",
+    "details": "Blocked pending AWS Cloud Support ticket #994821 for IOPS throttle on eu-west-1a."
+  },
+  {
+    "source": "Ticketing",
+    "record_id": "TCK-1004",
+    "timestamp": "2026-09-03T18:15:00+05:30",
+    "summary": "Rotate expired mTLS certificates for Auth Proxy",
+    "status": "completed",
+    "priority": "P2",
+    "assignee": "David Kim",
+    "details": "Automated cert-manager verified certificate renewal across internal mesh."
+  },
+  {
+    "source": "Ticketing",
+    "record_id": "TCK-1005",
+    "timestamp": "2026-09-03T18:50:00+05:30",
+    "summary": "Canary rollout of gRPC Gateway v1.8",
+    "status": "monitoring",
+    "priority": "P3",
+    "assignee": "Alex Rivera",
+    "details": "10% traffic routed to canary pods. Watch p99 latency on Datadog dashboard."
+  },
+  {
+    "source": "Ticketing",
+    "record_id": "TCK-1006",
+    "timestamp": "2026-09-03T16:30:00+05:30",
+    "summary": "Pre-shift ticket: Customer portal CSS glitch",
+    "status": "completed",
+    "priority": "P3",
+    "assignee": "Sara Lin",
+    "details": "Handled during previous shift before 17:00."
+  },
+  {
+    "source": "Ticketing",
+    "record_id": "TCK-1007",
+    "timestamp": "2026-09-03T20:00:00+05:30",
+    "summary": "Boundary ticket: Exactly at 20:00:00 shift end boundary",
+    "status": "in_progress",
+    "priority": "P3",
+    "assignee": "Sara Lin",
+    "details": "Must be excluded by half-open [start, end) rule."
+  },
+  {
+    "source": "Ticketing",
+    "record_id": "TCK-1008",
+    "timestamp": "2026-09-INVALID-MALFORMED-9999",
+    "summary": "Corrupt timestamp record test",
+    "status": "in_progress",
+    "priority": "P4",
+    "assignee": "Test Bot",
+    "details": "Parser must skip safely without crashing."
+  },
+  {
+    "source": "Ticketing",
+    "record_id": "TCK-1009",
+    "timestamp": "2026-09-03T21:30:00+05:30",
+    "summary": "Night Shift: Elasticsearch cluster re-indexing",
+    "status": "in_progress",
+    "priority": "P2",
+    "assignee": "Kenji Sato",
+    "details": "Shards 1-8 re-indexed successfully."
+  },
+  {
+    "source": "Ticketing",
+    "record_id": "TCK-1010",
+    "timestamp": "2026-09-03T23:45:00+05:30",
+    "summary": "Night Shift: Backup snapshot verification for RDS Aurora",
+    "status": "completed",
+    "priority": "P2",
+    "assignee": "Night Ops",
+    "details": "Daily snapshot integrity checks passed."
+  },
+  {
+    "source": "Ticketing",
+    "record_id": "TCK-1011",
+    "timestamp": "2026-09-04T06:00:00+05:30",
+    "summary": "Early Morning: Ingest pipeline throughput tuning",
+    "status": "completed",
+    "priority": "P2",
+    "assignee": "Maria Garcia",
+    "details": "Increased consumer concurrency from 4 to 8."
+  },
+  {
+    "source": "Ticketing",
+    "record_id": "TCK-1012",
+    "timestamp": "2026-09-04T13:00:00+05:30",
+    "summary": "Midday Shift: Kubernetes node memory leak on worker-12",
+    "status": "blocked",
+    "priority": "P1",
+    "assignee": "Elena Rostova",
+    "details": "Blocked on hardware vendor RAM replacement SLA."
+  },
+  {
+    "source": "Ticketing",
+    "record_id": "TCK-1013",
+    "timestamp": "2026-09-04T16:30:00+05:30",
+    "summary": "Quiet Shift: Routine log rotation configuration update",
+    "status": "completed",
+    "priority": "P3",
+    "assignee": "Sam Chen",
+    "details": "Cleaned up old 14-day archival logs."
+  }
+]

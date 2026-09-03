@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+
+# Environment Variables
+.env
+
+# Testing & Cache
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Operating System & IDE
+.DS_Store
+.idea/
+.vscode/
+
+# Flutter / Dart build artifacts
+shift_handover_flutter/.dart_tool/
+shift_handover_flutter/.packages
+shift_handover_flutter/build/
+
+# Local database (SQLite)
+database/*.db
+
+# Generated PDFs in output (keep directory structure)
+output/*.pdf
+!output/.gitkeep

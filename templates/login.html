@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SHIFT//HANDOVER — NOC Operator Login</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+  <style>
+    .login-wrapper {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: radial-gradient(circle at 50% 20%, rgba(0, 229, 160, 0.05) 0%, transparent 60%), #070B0A;
+    }
+
+    .login-box {
+      width: 100%;
+      max-width: 460px;
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 36px 32px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+    }
+
+    .login-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .login-title-row {
+      margin-bottom: 24px;
+    }
+
+    .login-main-heading {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .login-subtitle {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    .login-form {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .login-field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .login-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .demo-users-box {
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .demo-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    .demo-pills-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .demo-user-btn {
+      background-color: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      color: var(--text-main);
+    }
+
+    .demo-user-btn:hover {
+      background-color: var(--bg-card-hover);
+      border-color: var(--accent-primary);
+    }
+
+    .demo-user-name {
+      font-weight: 600;
+      font-size: 12.5px;
+    }
+
+    .demo-user-role {
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+
+    .demo-badge {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--accent-primary);
+      background-color: rgba(0, 229, 160, 0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .security-badge-row {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 16px;
+      margin-top: 24px;
+      font-size: 11px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+  </style>
+</head>
+<body>
+  <div class="login-wrapper">
+    <div class="login-box">
+      <!-- Brand Logo -->
+      <div class="login-brand">
+        <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+        </svg>
+        <div class="brand-text">
+          <span class="brand-title">SHIFT<span class="accent-slash">//</span>HANDOVER</span>
+          <span class="brand-tag">NOC ACCESS PORTAL</span>
+        </div>
+      </div>
+
+      <div class="login-title-row">
+        <h2 class="login-main-heading">Operator Authentication</h2>
+        <p class="login-subtitle">Sign in to generate and publish shift handover notes</p>
+      </div>
+
+      <!-- Login Form -->
+      <form id="login-form" class="login-form">
+        <div class="login-field">
+          <label for="login-email" class="login-label">Operator Email / Identity</label>
+          <input type="email" id="login-email" class="text-input" value="operator@noc.internal" required>
+        </div>
+
+        <div class="login-field">
+          <label for="login-pass" class="login-label">Password / Security Key</label>
+          <input type="password" id="login-pass" class="text-input" value="••••••••••••" required>
+        </div>
+
+        <button type="submit" class="btn-primary" style="width: 100%; justify-content: center; margin-top: 8px;">
+          <span>AUTHENTICATE & ENTER DASHBOARD</span>
+        </button>
+      </form>
+
+      <!-- Quick 1-Click Demo Logins -->
+      <div class="demo-users-box">
+        <div class="demo-title">⚡ Quick 1-Click Role Logins:</div>
+        <div class="demo-pills-list">
+          <div class="demo-user-btn" data-email="operator@noc.internal">
+            <div>
+              <div class="demo-user-name">Alex Rivera</div>
+              <div class="demo-user-role">Lead On-Call SRE (Core Platform)</div>
+            </div>
+            <span class="demo-badge">On-Call L3</span>
+          </div>
+
+          <div class="demo-user-btn" data-email="supervisor@noc.internal">
+            <div>
+              <div class="demo-user-name">Maria Garcia</div>
+              <div class="demo-user-role">Shift Operations Supervisor</div>
+            </div>
+            <span class="demo-badge">Commander</span>
+          </div>
+
+          <div class="demo-user-btn" data-email="admin@shifthandover.io">
+            <div>
+              <div class="demo-user-name">Admin Engineer</div>
+              <div class="demo-user-role">System Administrator</div>
+            </div>
+            <span class="demo-badge">Root Admin</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Security Trust Footer -->
+      <div class="security-badge-row">
+        <span>🔒 256-BIT ENCRYPTED</span>
+        <span>•</span>
+        <span>ZERO HALLUCINATION</span>
+        <span>•</span>
+        <span>SSO READY</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const form = document.getElementById("login-form");
+      const emailInput = document.getElementById("login-email");
+      const demoBtns = document.querySelectorAll(".demo-user-btn");
+
+      async function doLogin(email) {
+        try {
+          const res = await fetch("/api/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: email, password: "demo" })
+          });
+          const data = await res.json();
+          if (data.success) {
+            localStorage.setItem("shift_user", JSON.stringify(data.user));
+            window.location.href = "/";
+          }
+        } catch (err) {
+          window.location.href = "/";
+        }
+      }
+
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        doLogin(emailInput.value);
+      });
+
+      demoBtns.forEach(btn => {
+        btn.addEventListener("click", () => {
+          const email = btn.getAttribute("data-email");
+          emailInput.value = email;
+          doLogin(email);
+        });
+      });
+    });
+  </script>
+</body>
+</html>

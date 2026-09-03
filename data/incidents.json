@@ -1,0 +1,122 @@
+[
+  {
+    "source": "Incident",
+    "record_id": "INC-2001",
+    "timestamp": "2026-09-03T17:15:00+05:30",
+    "summary": "Database latency spike on primary checkout cluster",
+    "status": "triggered",
+    "severity": "SEV1",
+    "service": "checkout-api",
+    "details": "P99 database query time exceeded 2500ms; war room opened."
+  },
+  {
+    "source": "Incident",
+    "record_id": "INC-2001",
+    "timestamp": "2026-09-03T18:00:00+05:30",
+    "summary": "Database latency spike on primary checkout cluster",
+    "status": "investigating",
+    "severity": "SEV1",
+    "service": "checkout-api",
+    "details": "Identified rogue analytical query locking transaction index."
+  },
+  {
+    "source": "Incident",
+    "record_id": "INC-2001",
+    "timestamp": "2026-09-03T19:30:00+05:30",
+    "summary": "Database latency spike on primary checkout cluster resolved",
+    "status": "completed",
+    "severity": "SEV1",
+    "service": "checkout-api",
+    "details": "Terminated rogue query backend PID; added statement timeout limits. Latency normalized."
+  },
+  {
+    "source": "Incident",
+    "record_id": "INC-2002",
+    "timestamp": "2026-09-03T17:50:00+05:30",
+    "summary": "High memory consumption on Redis session cache cluster",
+    "status": "monitoring",
+    "severity": "SEV2",
+    "service": "user-session-cache",
+    "details": "Cache evicted inactive keys; memory usage stabilised at 68%. Monitoring for recurring leaks."
+  },
+  {
+    "source": "Incident",
+    "record_id": "INC-2003",
+    "timestamp": "2026-09-03T18:25:00+05:30",
+    "summary": "Third-party SMS OTP delivery degradation",
+    "status": "escalated",
+    "severity": "SEV2",
+    "service": "auth-notifications",
+    "details": "Twilio upstream provider experiencing major outage on US-East carrier routes. Escalated to provider account team."
+  },
+  {
+    "source": "Incident",
+    "record_id": "INC-2004",
+    "timestamp": "2026-09-03T19:05:00+05:30",
+    "summary": "Internal Grafana metrics rendering latency",
+    "status": "in_progress",
+    "severity": "SEV3",
+    "service": "observability-infra",
+    "details": "Prometheus query cache hit ratio dropped to 42%. Sizing up instance resources."
+  },
+  {
+    "source": "Incident",
+    "record_id": "INC-2005",
+    "timestamp": "2026-09-03T20:00:00+05:30",
+    "summary": "Boundary incident: Exactly at shift end boundary",
+    "status": "in_progress",
+    "severity": "SEV3",
+    "service": "billing-engine",
+    "details": "Excluded by half-open [start, end) interval."
+  },
+  {
+    "source": "Incident",
+    "record_id": "INC-2006",
+    "timestamp": "2026-09-03T15:45:00+05:30",
+    "summary": "Pre-shift incident: Edge CDN cache purge failure",
+    "status": "completed",
+    "severity": "SEV3",
+    "service": "cdn-edge",
+    "details": "Resolved before 17:00."
+  },
+  {
+    "source": "Incident",
+    "record_id": "INC-2007",
+    "timestamp": "2026-09-03T22:15:00+05:30",
+    "summary": "Night Shift: Kafka topic replication lag on telemetry-stream",
+    "status": "in_progress",
+    "severity": "SEV2",
+    "service": "event-bus",
+    "details": "Broker 3 rebalancing in progress."
+  },
+  {
+    "source": "Incident",
+    "record_id": "INC-2008",
+    "timestamp": "2026-09-04T08:30:00+05:30",
+    "summary": "Early Morning: DNS resolution timeout on external partner webhook",
+    "status": "completed",
+    "severity": "SEV3",
+    "service": "integrations-gateway",
+    "details": "Flushed CoreDNS cache pods."
+  },
+  {
+    "source": "Incident",
+    "record_id": "INC-2009",
+    "timestamp": "2026-09-04T14:15:00+05:30",
+    "summary": "Midday Shift: Major BGP route flap causing intermittent packet loss",
+    "status": "escalated",
+    "severity": "SEV1",
+    "service": "network-edge",
+    "details": "Escalated to ISP Tier 3 engineering."
+  },
+  {
+    "source": "Incident",
+    "record_id": "INC-2010",
+    "timestamp": "2026-09-04T17:15:00+05:30",
+    "summary": "Quiet Shift: Routine healthcheck probe intermittent timeout",
+    "status": "completed",
+    "severity": "SEV4",
+    "service": "probe-daemon",
+    "details": "Increased probe timeout from 1s to 2s."
+  }
+]
