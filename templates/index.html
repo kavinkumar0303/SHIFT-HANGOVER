@@ -8,6 +8,1310 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/style.css">
+  <style>
+/* Embedded Design System for Instant Zero-FOUC Render */
+/* ==========================================================================
+   SHIFT//HANDOVER — Visual Design System: OBSIDIAN + ELECTRIC MINT
+   Enterprise NOC-Grade Theme
+   ========================================================================== */
+
+:root {
+  /* Color System */
+  --bg-primary: #070B0A;
+  --bg-secondary: #0D1412;
+  --bg-card: #121C19;
+  --bg-card-hover: #172722;
+  --bg-input: #0A110F;
+
+  --accent-primary: #00E5A0;
+  --accent-bright: #5CFFC1;
+  --accent-glow: rgba(0, 229, 160, 0.15);
+  
+  --color-completed: #00D68F;
+  --color-in-progress: #38BDF8;
+  --color-blockers: #FF5C5C;
+  --color-watch: #FFC857;
+
+  --text-main: #F1F5F3;
+  --text-secondary: #8FA39C;
+  --text-muted: #5C726A;
+
+  --border-color: #20332D;
+  --border-hover: #2F4D44;
+  --border-accent: rgba(0, 229, 160, 0.35);
+
+  /* Typography */
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Layout & Transitions */
+  --sidebar-width: 260px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --transition-fast: 0.18s ease;
+  --transition-normal: 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Reset & Box Sizing */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-main);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.5;
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* App Shell */
+.app-container {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ==========================================================================
+   SIDEBAR
+   ========================================================================== */
+
+.sidebar {
+  width: var(--sidebar-width);
+  background-color: var(--bg-secondary);
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 100;
+  padding: 24px 16px;
+}
+
+.brand-container {
+  margin-bottom: 32px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.brand-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-icon {
+  width: 28px;
+  height: 28px;
+  color: var(--accent-primary);
+  filter: drop-shadow(0 0 6px rgba(0, 229, 160, 0.4));
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.brand-title {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.5px;
+  color: var(--text-main);
+}
+
+.accent-slash {
+  color: var(--accent-primary);
+}
+
+.brand-tag {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  color: var(--text-muted);
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all var(--transition-fast);
+  border: 1px solid transparent;
+}
+
+.nav-item svg {
+  width: 18px;
+  height: 18px;
+}
+
+.nav-item:hover {
+  color: var(--text-main);
+  background-color: var(--bg-card);
+  border-color: var(--border-color);
+}
+
+.nav-item.active {
+  color: var(--accent-primary);
+  background-color: rgba(0, 229, 160, 0.08);
+  border-color: var(--border-accent);
+  font-weight: 600;
+}
+
+.sidebar-footer {
+  padding-top: 16px;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.system-status-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+}
+
+.status-pulse-dot {
+  width: 8px;
+  height: 8px;
+  background-color: var(--accent-primary);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--accent-primary);
+  animation: pulse-glow 2s infinite;
+}
+
+.status-text {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent-primary);
+  letter-spacing: 0.5px;
+}
+
+.live-clock {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* ==========================================================================
+   MAIN CONTENT AREA
+   ========================================================================== */
+
+.main-content {
+  margin-left: var(--sidebar-width);
+  flex: 1;
+  padding: 32px 40px 60px 40px;
+  max-width: 1200px;
+}
+
+/* Top Header */
+.top-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 28px;
+}
+
+.page-title {
+  font-family: var(--font-mono);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-main);
+  letter-spacing: -0.5px;
+}
+
+.text-accent {
+  color: var(--accent-primary);
+}
+
+.page-subtitle {
+  color: var(--text-secondary);
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.user-profile-pill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 5px 10px;
+}
+
+.user-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-color: rgba(0, 229, 160, 0.15);
+  color: var(--accent-primary);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(0, 229, 160, 0.3);
+}
+
+.user-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-main);
+  line-height: 1.2;
+}
+
+.user-role {
+  font-size: 10px;
+  color: var(--text-secondary);
+  line-height: 1.2;
+}
+
+.btn-logout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  text-decoration: none;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all var(--transition-fast);
+}
+
+.btn-logout:hover {
+  color: var(--color-blockers);
+  background-color: rgba(255, 92, 92, 0.1);
+}
+
+.btn-logout svg {
+  width: 14px;
+  height: 14px;
+}
+
+.status-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.status-pill.ready {
+  background-color: rgba(0, 229, 160, 0.1);
+  border: 1px solid var(--accent-primary);
+  color: var(--accent-primary);
+}
+
+.pulse-indicator {
+  width: 6px;
+  height: 6px;
+  background-color: var(--accent-primary);
+  border-radius: 50%;
+  animation: pulse-glow 2s infinite;
+}
+
+/* Section Containers */
+.section-container {
+  margin-bottom: 28px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.section-heading {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.heading-icon {
+  width: 16px;
+  height: 16px;
+  color: var(--accent-primary);
+}
+
+/* Cards */
+.card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  transition: border-color var(--transition-fast);
+}
+
+.card:hover {
+  border-color: var(--border-hover);
+}
+
+/* ==========================================================================
+   DATA SOURCES STATUS GRID
+   ========================================================================== */
+
+.sources-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.source-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  transition: all var(--transition-fast);
+}
+
+.source-card:hover {
+  background-color: var(--bg-card-hover);
+  border-color: var(--border-hover);
+}
+
+.source-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.source-name-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.source-icon {
+  width: 18px;
+  height: 18px;
+  color: var(--accent-primary);
+}
+
+.source-title {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text-main);
+}
+
+.source-status-badge {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+.source-status-badge.connected {
+  background-color: rgba(0, 229, 160, 0.12);
+  color: var(--accent-primary);
+  border: 1px solid rgba(0, 229, 160, 0.3);
+}
+
+.source-status-badge.unavailable {
+  background-color: rgba(255, 92, 92, 0.12);
+  color: var(--color-blockers);
+  border: 1px solid rgba(255, 92, 92, 0.3);
+}
+
+.source-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.meta-item {
+  display: flex;
+  justify-content: space-between;
+}
+
+.meta-value.code {
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+/* ==========================================================================
+   CONFIG & SHIFT GENERATOR FORM
+   ========================================================================== */
+
+.config-card {
+  padding: 24px;
+}
+
+.config-header {
+  margin-bottom: 16px;
+}
+
+.config-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.config-helper {
+  font-size: 12px;
+  color: var(--text-muted);
+  display: block;
+  margin-top: 4px;
+}
+
+/* Presets */
+.presets-row {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.presets-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+}
+
+.presets-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.preset-pill {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-family: var(--font-sans);
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.preset-pill:hover {
+  background-color: var(--bg-card-hover);
+  color: var(--text-main);
+  border-color: var(--border-hover);
+}
+
+.preset-pill.active {
+  background-color: rgba(0, 229, 160, 0.1);
+  color: var(--accent-primary);
+  border-color: var(--accent-primary);
+  font-weight: 600;
+}
+
+/* Inputs */
+.inputs-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 180px;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.input-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.text-input, .select-input {
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-main);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  padding: 10px 12px;
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+
+.text-input:focus, .select-input:focus {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 1px var(--accent-primary);
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+/* Buttons */
+.btn-primary {
+  background-color: var(--accent-primary);
+  color: #04140D;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  padding: 12px 24px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-decoration: none;
+}
+
+.btn-primary:hover {
+  background-color: var(--accent-bright);
+  box-shadow: 0 0 16px var(--accent-glow);
+  transform: translateY(-1px);
+}
+
+.btn-primary svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
+.btn-secondary {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 13px;
+  padding: 11px 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-decoration: none;
+}
+
+.btn-secondary:hover {
+  background-color: var(--bg-card-hover);
+  border-color: var(--border-hover);
+}
+
+.btn-secondary svg {
+  width: 15px;
+  height: 15px;
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 11px;
+}
+
+/* ==========================================================================
+   PIPELINE PROGRESS BAR
+   ========================================================================== */
+
+.progress-card {
+  border-color: var(--border-accent);
+  background-color: rgba(0, 229, 160, 0.03);
+  padding: 24px;
+}
+
+.progress-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.progress-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(0, 229, 160, 0.2);
+  border-top-color: var(--accent-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.progress-title {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent-primary);
+}
+
+.pipeline-steps-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.pipe-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  opacity: 0.4;
+  transition: opacity var(--transition-fast);
+}
+
+.pipe-step.active {
+  opacity: 1;
+}
+
+.pipe-step.completed {
+  opacity: 1;
+}
+
+.step-num {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.pipe-step.active .step-num {
+  background-color: var(--accent-primary);
+  color: #04140D;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 10px var(--accent-primary);
+}
+
+.pipe-step.completed .step-num {
+  background-color: rgba(0, 229, 160, 0.2);
+  color: var(--accent-primary);
+  border-color: var(--accent-primary);
+}
+
+.step-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.pipe-step.active .step-label {
+  color: var(--text-main);
+  font-weight: 600;
+}
+
+.pipe-connector {
+  flex: 1;
+  height: 1px;
+  background-color: var(--border-color);
+  margin: 0 8px;
+  margin-bottom: 18px;
+}
+
+/* ==========================================================================
+   RESULTS & METRICS
+   ========================================================================== */
+
+.results-top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.results-main-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.results-subtitle {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.export-btn-group {
+  display: flex;
+  gap: 10px;
+}
+
+/* Metrics Grid */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.metric-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.metric-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.metric-val {
+  font-family: var(--font-mono);
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.completed-metric {
+  border-left: 3px solid var(--color-completed);
+}
+.completed-metric .metric-label, .completed-metric .metric-val {
+  color: var(--color-completed);
+}
+
+.in-progress-metric {
+  border-left: 3px solid var(--color-in-progress);
+}
+.in-progress-metric .metric-label, .in-progress-metric .metric-val {
+  color: var(--color-in-progress);
+}
+
+.blockers-metric {
+  border-left: 3px solid var(--color-blockers);
+}
+.blockers-metric .metric-label, .blockers-metric .metric-val {
+  color: var(--color-blockers);
+}
+
+.watch-metric {
+  border-left: 3px solid var(--color-watch);
+}
+.watch-metric .metric-label, .watch-metric .metric-val {
+  color: var(--color-watch);
+}
+
+/* ==========================================================================
+   4 HANDOVER SECTIONS & ITEM CARDS
+   ========================================================================== */
+
+.sections-accordion {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.handover-section-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.handover-sec-header {
+  padding: 12px 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.completed-header {
+  background-color: rgba(0, 214, 143, 0.08);
+}
+.in-progress-header {
+  background-color: rgba(56, 189, 248, 0.08);
+}
+.blockers-header {
+  background-color: rgba(255, 92, 92, 0.08);
+}
+.watch-header {
+  background-color: rgba(255, 200, 87, 0.08);
+}
+
+.sec-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sec-icon {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.completed-header .sec-icon, .completed-header .sec-title {
+  color: var(--color-completed);
+}
+.in-progress-header .sec-icon, .in-progress-header .sec-title {
+  color: var(--color-in-progress);
+}
+.blockers-header .sec-icon, .blockers-header .sec-title {
+  color: var(--color-blockers);
+}
+.watch-header .sec-icon, .watch-header .sec-title {
+  color: var(--color-watch);
+}
+
+.sec-title {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.sec-badge {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-secondary);
+  background-color: var(--bg-secondary);
+  padding: 2px 8px;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+}
+
+.handover-sec-body {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Item Cards */
+.handover-item {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  transition: all var(--transition-fast);
+}
+
+.handover-item:hover {
+  background-color: var(--bg-card-hover);
+  border-color: var(--border-hover);
+}
+
+.item-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 6px;
+  gap: 12px;
+}
+
+.item-summary-wrap {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex: 1;
+}
+
+.item-record-id {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent-primary);
+  background-color: rgba(0, 229, 160, 0.08);
+  border: 1px solid rgba(0, 229, 160, 0.2);
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.item-summary {
+  font-weight: 600;
+  font-size: 13.5px;
+  color: var(--text-main);
+}
+
+.item-trace-meta {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  display: flex;
+  gap: 8px;
+}
+
+.item-trace-meta span {
+  color: var(--text-secondary);
+}
+
+.item-badges-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.badge-pill {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 3px;
+  text-transform: uppercase;
+}
+
+.badge-status {
+  background-color: rgba(255, 255, 255, 0.06);
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+}
+
+.badge-priority {
+  background-color: rgba(255, 92, 92, 0.1);
+  color: var(--color-blockers);
+  border: 1px solid rgba(255, 92, 92, 0.25);
+}
+
+.badge-assignee {
+  background-color: rgba(56, 189, 248, 0.1);
+  color: var(--color-in-progress);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+}
+
+.item-details-text {
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+
+.item-progression-box {
+  margin-top: 8px;
+  padding: 6px 10px;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.progression-arrow {
+  color: var(--accent-primary);
+  margin: 0 4px;
+}
+
+/* Empty Section State */
+.empty-state-banner {
+  background-color: var(--bg-secondary);
+  border: 1px dashed var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  text-align: center;
+  color: var(--text-muted);
+  font-style: italic;
+  font-size: 13px;
+}
+
+/* ==========================================================================
+   MODAL & PDF PREVIEW
+   ========================================================================== */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 24px;
+}
+
+.modal-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 900px;
+  height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+}
+
+.modal-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.modal-close-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 24px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.modal-close-btn:hover {
+  color: var(--text-main);
+}
+
+.modal-body {
+  flex: 1;
+  background-color: #1a1a1a;
+  padding: 0;
+}
+
+.pdf-viewer-frame {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+.modal-footer {
+  padding: 12px 20px;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* Handover History Table */
+.history-table-container {
+  overflow-x: auto;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  margin-top: 12px;
+}
+
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 12.5px;
+}
+
+.history-table th {
+  background-color: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.history-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-main);
+  vertical-align: middle;
+}
+
+.history-table tr:last-child td {
+  border-bottom: none;
+}
+
+.history-table tr:hover td {
+  background-color: var(--bg-card-hover);
+}
+
+.history-empty {
+  text-align: center;
+  color: var(--text-muted);
+  font-style: italic;
+  padding: 24px !important;
+}
+
+.history-pill {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.history-pill.completed {
+  color: var(--color-completed);
+  background-color: rgba(0, 214, 143, 0.1);
+}
+
+.history-pill.in-progress {
+  color: var(--color-in-progress);
+  background-color: rgba(56, 189, 248, 0.1);
+}
+
+.history-pill.blockers {
+  color: var(--color-blockers);
+  background-color: rgba(255, 92, 92, 0.1);
+}
+
+.history-pill.watch-list {
+  color: var(--color-watch-list);
+  background-color: rgba(255, 200, 87, 0.1);
+}
+
+.history-actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.history-btn {
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  text-decoration: none;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-secondary);
+  color: var(--text-main);
+  transition: all var(--transition-fast);
+}
+
+.history-btn:hover {
+  background-color: var(--bg-input);
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+
+.history-btn.primary {
+  background-color: rgba(0, 229, 160, 0.15);
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+
+.history-btn.primary:hover {
+  background-color: var(--accent-primary);
+  color: #04140D;
+}
+
+/* Helpers */
+.hidden {
+  display: none !important;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.9); }
+}
+
+/* Responsive */
+@media (max-width: 960px) {
+  .sidebar {
+    width: 200px;
+  }
+  .main-content {
+    margin-left: 200px;
+    padding: 20px;
+  }
+  .inputs-grid {
+    grid-template-columns: 1fr;
+  }
+  .metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 720px) {
+  .sidebar {
+    display: none;
+  }
+  .main-content {
+    margin-left: 0;
+    padding: 16px;
+  }
+  .metrics-grid {
+    grid-template-columns: 1fr;
+  }
+  .results-top-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+}
+
+  </style>
 </head>
 <body>
   <div class="app-container">
@@ -15,7 +1319,7 @@
     <aside class="sidebar">
       <div class="brand-container">
         <div class="brand-logo">
-          <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg class="brand-icon" width="28" height="28" style="width:28px;height:28px;max-width:28px;min-width:28px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
           </svg>
           <div class="brand-text">
@@ -487,6 +1791,512 @@
     </main>
   </div>
 
-  <script src="/static/app.js"></script>
+  <script>
+/**
+ * app.js - Client-Side Controller for SHIFT//HANDOVER Web Dashboard
+ */
+
+document.addEventListener("DOMContentLoaded", () => {
+  // Elements
+  const liveClockEl = document.getElementById("live-clock");
+  const shiftForm = document.getElementById("shift-form");
+  const shiftStartInput = document.getElementById("shift-start");
+  const shiftEndInput = document.getElementById("shift-end");
+  const shiftTzSelect = document.getElementById("shift-tz");
+  const presetPills = document.querySelectorAll(".preset-pill");
+  const btnGenerate = document.getElementById("btn-generate");
+  const btnDummyTest = document.getElementById("btn-dummy-test");
+  const btnRefreshSources = document.getElementById("btn-refresh-sources");
+
+  // Progress UI
+  const progressSection = document.getElementById("progress-section");
+  const progressMsg = document.getElementById("progress-status-msg");
+  const stepFetch = document.getElementById("step-fetch");
+  const stepFilter = document.getElementById("step-filter");
+  const stepDedup = document.getElementById("step-dedup");
+  const stepClassify = document.getElementById("step-classify");
+  const stepPublish = document.getElementById("step-publish");
+
+  // Results UI
+  const resultsSection = document.getElementById("results-section");
+  const resultsWindowLabel = document.getElementById("results-window-label");
+  const btnViewPdf = document.getElementById("btn-view-pdf");
+  const btnDownloadPdf = document.getElementById("btn-download-pdf");
+
+  // Metric Counters
+  const cntCompleted = document.getElementById("cnt-completed");
+  const cntInProgress = document.getElementById("cnt-in-progress");
+  const cntBlockers = document.getElementById("cnt-blockers");
+  const cntWatch = document.getElementById("cnt-watch");
+
+  // Section Badges & Lists
+  const badgeCompleted = document.getElementById("badge-completed");
+  const badgeInProgress = document.getElementById("badge-in-progress");
+  const badgeBlockers = document.getElementById("badge-blockers");
+  const badgeWatch = document.getElementById("badge-watch");
+
+  const listCompleted = document.getElementById("list-completed");
+  const listInProgress = document.getElementById("list-in-progress");
+  const listBlockers = document.getElementById("list-blockers");
+  const listWatch = document.getElementById("list-watch");
+
+  // Modal UI
+  const pdfModal = document.getElementById("pdf-modal");
+  const modalClose = document.getElementById("modal-close");
+  const modalDismissBtn = document.getElementById("modal-dismiss-btn");
+  const modalDownloadLink = document.getElementById("modal-download-link");
+  const pdfFrame = document.getElementById("pdf-frame");
+
+  // User Profile
+  function loadUserProfile() {
+    try {
+      const stored = localStorage.getItem("shift_user");
+      let user = stored ? JSON.parse(stored) : null;
+      if (!user) {
+        user = {
+          name: "Alex Rivera",
+          role: "Lead On-Call SRE",
+          avatar: "AR"
+        };
+      }
+      const nameEl = document.getElementById("user-name");
+      const roleEl = document.getElementById("user-role");
+      const avatarEl = document.getElementById("user-avatar");
+      if (nameEl) nameEl.textContent = user.name;
+      if (roleEl) roleEl.textContent = user.role;
+      if (avatarEl) avatarEl.textContent = user.avatar || user.name.substring(0, 2).toUpperCase();
+    } catch (e) {
+      console.warn("Failed to load user profile:", e);
+    }
+  }
+  loadUserProfile();
+
+  const btnLogout = document.getElementById("btn-logout");
+  if (btnLogout) {
+    btnLogout.addEventListener("click", (e) => {
+      localStorage.removeItem("shift_user");
+    });
+  }
+
+  // Live UTC Clock
+  function updateLiveClock() {
+    const now = new Date();
+    const utcStr = now.toISOString().substring(11, 19) + " UTC";
+    if (liveClockEl) liveClockEl.textContent = utcStr;
+  }
+  setInterval(updateLiveClock, 1000);
+  updateLiveClock();
+
+  // Load Data Source Health & Database Stats
+  async function loadSourceHealth() {
+    try {
+      const res = await fetch("/api/status");
+      const data = await res.json();
+
+      const ticketSource = data.sources?.find(s => s.name === "Ticketing");
+      const incidentSource = data.sources?.find(s => s.name === "Incident Management");
+      const dbStats = data.database;
+
+      const ticketCountEl = document.getElementById("ticket-count");
+      const ticketBadgeEl = document.getElementById("ticket-badge");
+      const incidentCountEl = document.getElementById("incident-count");
+      const incidentBadgeEl = document.getElementById("incident-badge");
+
+      const dbFileEl = document.getElementById("db-file");
+      const dbCountsEl = document.getElementById("db-counts");
+      const dbReportsCountEl = document.getElementById("db-reports-count");
+      const dbBadgeEl = document.getElementById("db-badge");
+
+      if (ticketSource && ticketCountEl) {
+        ticketCountEl.textContent = `${ticketSource.total_records} records`;
+        if (ticketSource.connected) {
+          ticketBadgeEl.textContent = "● Connected";
+          ticketBadgeEl.className = "source-status-badge connected";
+        } else {
+          ticketBadgeEl.textContent = "● Unavailable";
+          ticketBadgeEl.className = "source-status-badge unavailable";
+        }
+      }
+
+      if (incidentSource && incidentCountEl) {
+        incidentCountEl.textContent = `${incidentSource.total_records} records`;
+        if (incidentSource.connected) {
+          incidentBadgeEl.textContent = "● Connected";
+          incidentBadgeEl.className = "source-status-badge connected";
+        } else {
+          incidentBadgeEl.textContent = "● Unavailable";
+          incidentBadgeEl.className = "source-status-badge unavailable";
+        }
+      }
+
+      if (dbStats && dbFileEl) {
+        dbFileEl.textContent = dbStats.database_file || "shift_handover.db";
+        dbCountsEl.textContent = `${dbStats.tickets_count} tickets / ${dbStats.incidents_count} incidents`;
+        dbReportsCountEl.textContent = `${dbStats.reports_count} generated reports`;
+        if (dbStats.connected) {
+          dbBadgeEl.textContent = "● Connected";
+          dbBadgeEl.className = "source-status-badge connected";
+        } else {
+          dbBadgeEl.textContent = "● Disconnected";
+          dbBadgeEl.className = "source-status-badge unavailable";
+        }
+      }
+    } catch (err) {
+      console.warn("Failed to fetch data sources status:", err);
+    }
+  }
+  loadSourceHealth();
+  if (btnRefreshSources) btnRefreshSources.addEventListener("click", loadSourceHealth);
+
+  // Quick Preset Click Handler
+  presetPills.forEach(pill => {
+    pill.addEventListener("click", () => {
+      presetPills.forEach(p => p.classList.remove("active"));
+      pill.classList.add("active");
+
+      const start = pill.getAttribute("data-start");
+      const end = pill.getAttribute("data-end");
+      const tz = pill.getAttribute("data-tz");
+
+      if (start) shiftStartInput.value = start;
+      if (end) shiftEndInput.value = end;
+      if (tz) shiftTzSelect.value = tz;
+    });
+  });
+
+  // Animated Pipeline Steps Runner
+  async function animatePipelineSteps() {
+    const steps = [
+      { el: stepFetch, msg: "Step 1/5: Ingesting activity from Ticketing & Incident data feeds..." },
+      { el: stepFilter, msg: "Step 2/5: Normalizing UTC timestamps & filtering shift window [start, end)..." },
+      { el: stepDedup, msg: "Step 3/5: Grouping by (source, record_id) & collapsing progression updates..." },
+      { el: stepClassify, msg: "Step 4/5: Applying deterministic rule-based classification into 4 sections..." },
+      { el: stepPublish, msg: "Step 5/5: Compiling executive-ready single PDF report via ReportLab..." }
+    ];
+
+    for (let i = 0; i < steps.length; i++) {
+      steps.forEach((s, idx) => {
+        if (idx < i) {
+          s.el.className = "pipe-step completed";
+        } else if (idx === i) {
+          s.el.className = "pipe-step active";
+        } else {
+          s.el.className = "pipe-step";
+        }
+      });
+      progressMsg.textContent = steps[i].msg;
+      await new Promise(r => setTimeout(r, 120));
+    }
+  }
+
+  // Trigger Generation
+  async function triggerGeneration(dummyMode = false) {
+    const startVal = shiftStartInput.value;
+    const endVal = shiftEndInput.value;
+    const tzVal = shiftTzSelect.value;
+
+    if (!startVal || !endVal) {
+      alert("Please specify both Shift Start and Shift End timestamps.");
+      return;
+    }
+
+    const isoStart = `${startVal}:00${tzVal}`;
+    const isoEnd = `${endVal}:00${tzVal}`;
+
+    // UI state
+    btnGenerate.disabled = true;
+    btnGenerate.style.opacity = "0.7";
+    progressSection.classList.remove("hidden");
+    resultsSection.classList.add("hidden");
+
+    await animatePipelineSteps();
+
+    try {
+      const response = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          shift_start: isoStart,
+          shift_end: isoEnd,
+          dummy: dummyMode
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || "Failed to generate handover note.");
+      }
+
+      // Mark all steps completed
+      [stepFetch, stepFilter, stepDedup, stepClassify, stepPublish].forEach(el => {
+        el.className = "pipe-step completed";
+      });
+      progressMsg.textContent = "Handover Generation Complete!";
+
+      // Render Results
+      renderResults(data);
+
+      setTimeout(() => {
+        progressSection.classList.add("hidden");
+        resultsSection.classList.remove("hidden");
+        resultsSection.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 250);
+
+    } catch (err) {
+      alert(`Error generating handover note:\n${err.message}`);
+      progressSection.classList.add("hidden");
+    } finally {
+      btnGenerate.disabled = false;
+      btnGenerate.style.opacity = "1";
+    }
+  }
+
+  // Render Section Items
+  function renderSectionList(container, items, sectionName) {
+    container.innerHTML = "";
+
+    if (!items || items.length === 0) {
+      container.innerHTML = `<div class="empty-state-banner">Nothing to report.</div>`;
+      return;
+    }
+
+    items.forEach(item => {
+      const card = document.createElement("div");
+      card.className = "handover-item";
+
+      const recId = item.record_id || "N/A";
+      const source = item.source || "Unknown System";
+      const summary = item.summary || item.title || "Untitled Activity";
+      const timestamp = item.timestamp || item.timestamp_display || "N/A";
+      const status = (item.status || "N/A").replace(/_/g, " ").toUpperCase();
+      const priority = item.priority || item.severity || "";
+      const assignee = item.assignee || item.service || "";
+      const details = item.details || item.notes || "";
+      const progression = item.progression || [];
+
+      let badgesHtml = `<span class="badge-pill badge-status">${escapeHtml(status)}</span>`;
+      if (priority) {
+        badgesHtml += `<span class="badge-pill badge-priority">${escapeHtml(priority)}</span>`;
+      }
+      if (assignee) {
+        badgesHtml += `<span class="badge-pill badge-assignee">${escapeHtml(assignee)}</span>`;
+      }
+
+      let progressionHtml = "";
+      if (progression && progression.length > 1) {
+        progressionHtml = `
+          <div class="item-progression-box">
+            <span style="color: var(--text-muted);">Progression:</span> 
+            ${progression.map(p => escapeHtml(p)).join('<span class="progression-arrow">→</span>')}
+          </div>
+        `;
+      }
+
+      let detailsHtml = "";
+      if (details && details !== summary) {
+        detailsHtml = `<p class="item-details-text">${escapeHtml(details)}</p>`;
+      }
+
+      card.innerHTML = `
+        <div class="item-top-row">
+          <div class="item-summary-wrap">
+            <span class="item-record-id">[${escapeHtml(recId)}]</span>
+            <span class="item-summary">${escapeHtml(summary)}</span>
+          </div>
+          <div class="item-trace-meta">
+            <span>${escapeHtml(source)}</span> | ${escapeHtml(timestamp)}
+          </div>
+        </div>
+
+        <div class="item-badges-row">
+          ${badgesHtml}
+        </div>
+
+        ${detailsHtml}
+        ${progressionHtml}
+      `;
+
+      container.appendChild(card);
+    });
+  }
+
+  // Render Full Handover Results
+  function renderResults(data) {
+    const shift = data.shift_window || {};
+    resultsWindowLabel.textContent = `Shift: ${shift.start} → ${shift.end} (${shift.start_utc || ''})`;
+
+    const metrics = data.metrics || {};
+    cntCompleted.textContent = metrics.completed || 0;
+    cntInProgress.textContent = metrics.in_progress || 0;
+    cntBlockers.textContent = metrics.blockers || 0;
+    cntWatch.textContent = metrics.watch_list || 0;
+
+    const sections = data.sections || {};
+    const compList = sections.completed || [];
+    const inProgList = sections.in_progress || [];
+    const blockList = sections.blockers || [];
+    const watchList = sections.watch_list || [];
+
+    badgeCompleted.textContent = `${compList.length} item(s)`;
+    badgeInProgress.textContent = `${inProgList.length} item(s)`;
+    badgeBlockers.textContent = `${blockList.length} item(s)`;
+    badgeWatch.textContent = `${watchList.length} item(s)`;
+
+    renderSectionList(listCompleted, compList, "COMPLETED");
+    renderSectionList(listInProgress, inProgList, "IN PROGRESS");
+    renderSectionList(listBlockers, blockList, "BLOCKERS / ESCALATIONS");
+    renderSectionList(listWatch, watchList, "WATCH-LIST");
+
+    // PDF Links
+    if (data.pdf_url) {
+      btnDownloadPdf.href = `${data.pdf_url}?download=1`;
+      modalDownloadLink.href = `${data.pdf_url}?download=1`;
+      pdfFrame.src = data.pdf_url;
+    }
+  }
+
+  // Load Handover History from SQLite
+  async function loadHandoverHistory() {
+    const tableBody = document.getElementById("history-table-body");
+    if (!tableBody) return;
+
+    try {
+      const res = await fetch("/api/reports");
+      const data = await res.json();
+      const reports = data.reports || [];
+
+      if (!reports.length) {
+        tableBody.innerHTML = `<tr><td colspan="9" class="history-empty">No previous handover reports stored yet.</td></tr>`;
+        return;
+      }
+
+      tableBody.innerHTML = "";
+      reports.forEach(rep => {
+        const tr = document.createElement("tr");
+        const pdfUrl = `/api/download/${encodeURIComponent(rep.pdf_filename)}`;
+
+        tr.innerHTML = `
+          <td><strong>#${rep.id}</strong></td>
+          <td class="code" style="font-size:11.5px;">${escapeHtml(rep.shift_start)} <br/><span style="color:var(--text-muted);">to</span> ${escapeHtml(rep.shift_end)}</td>
+          <td><strong>${rep.total_items}</strong></td>
+          <td><span class="history-pill completed">${rep.completed_count}</span></td>
+          <td><span class="history-pill in-progress">${rep.in_progress_count}</span></td>
+          <td><span class="history-pill blockers">${rep.blockers_count}</span></td>
+          <td><span class="history-pill watch-list">${rep.watchlist_count}</span></td>
+          <td style="font-size:11px; color:var(--text-secondary);">${escapeHtml(rep.generated_at)}</td>
+          <td>
+            <div class="history-actions">
+              <button class="history-btn primary btn-view-report" data-id="${rep.id}">VIEW</button>
+              <a href="${pdfUrl}?download=1" class="history-btn" target="_blank" download>PDF</a>
+            </div>
+          </td>
+        `;
+        tableBody.appendChild(tr);
+      });
+
+      // Attach View Handlers
+      tableBody.querySelectorAll(".btn-view-report").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const reportId = btn.getAttribute("data-id");
+          await viewHistoricalReport(reportId);
+        });
+      });
+    } catch (err) {
+      console.warn("Failed to load handover history:", err);
+      tableBody.innerHTML = `<tr><td colspan="9" class="history-empty">Failed to load reports: ${escapeHtml(err.message)}</td></tr>`;
+    }
+  }
+
+  // View Specific Historical Report
+  async function viewHistoricalReport(reportId) {
+    try {
+      const res = await fetch(`/api/reports/${reportId}`);
+      const data = await res.json();
+      if (data.success && data.report) {
+        const rep = data.report;
+        const formattedData = {
+          success: true,
+          shift_window: {
+            start: rep.shift_start,
+            end: rep.shift_end,
+            start_utc: rep.shift_start,
+            end_utc: rep.shift_end
+          },
+          metrics: {
+            total_raw_events: rep.total_items,
+            completed: rep.completed_count,
+            in_progress: rep.in_progress_count,
+            blockers: rep.blockers_count,
+            watch_list: rep.watchlist_count
+          },
+          sections: {
+            completed: rep.sections?.COMPLETED || [],
+            in_progress: rep.sections?.["IN PROGRESS"] || [],
+            blockers: rep.sections?.["BLOCKERS / ESCALATIONS"] || [],
+            watch_list: rep.sections?.["WATCH-LIST"] || []
+          },
+          pdf_url: `/api/download/${encodeURIComponent(rep.pdf_filename)}`
+        };
+
+        resultsSection.classList.remove("hidden");
+        renderResults(formattedData);
+        resultsSection.scrollIntoView({ behavior: "smooth" });
+      }
+    } catch (e) {
+      alert(`Error loading report #${reportId}: ${e.message}`);
+    }
+  }
+
+  // History Refresh Button
+  const btnRefreshHistory = document.getElementById("btn-refresh-history");
+  if (btnRefreshHistory) {
+    btnRefreshHistory.addEventListener("click", loadHandoverHistory);
+  }
+  loadHandoverHistory();
+
+  // Modal Listeners
+  btnViewPdf.addEventListener("click", () => {
+    pdfModal.classList.remove("hidden");
+  });
+
+  function closeModal() {
+    pdfModal.classList.add("hidden");
+  }
+
+  modalClose.addEventListener("click", closeModal);
+  modalDismissBtn.addEventListener("click", closeModal);
+  pdfModal.addEventListener("click", (e) => {
+    if (e.target === pdfModal) closeModal();
+  });
+
+  // Form Submit Handler
+  shiftForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    await triggerGeneration(false);
+    loadHandoverHistory();
+    loadSourceHealth();
+  });
+
+  // Dummy Test Handler
+  btnDummyTest.addEventListener("click", async () => {
+    await triggerGeneration(true);
+    loadHandoverHistory();
+    loadSourceHealth();
+  });
+
+  function escapeHtml(str) {
+    if (!str) return "";
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+});
+
+</script>
+<script src="/static/app.js"></script>
 </body>
 </html>

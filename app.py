@@ -11,6 +11,7 @@ Provides:
 - GET /api/reports/<int:report_id> : Individual report details
 - GET /api/data/tickets : Stored tickets
 - GET /api/data/incidents : Stored incidents
+- GET /static/<filename> : Static CSS / JS / Assets
 """
 
 import logging
@@ -509,6 +510,14 @@ def download_pdf(filename):
     except Exception as err:
         logger.error(f"Failed to send PDF file '{file_path}': {err}")
         return jsonify({"success": False, "error": f"Error serving PDF: {str(err)}"}), 500
+
+
+@app.route("/static/<path:filename>", methods=["GET"])
+@app.route("/api/index/static/<path:filename>", methods=["GET"])
+@app.route("/api/index.py/static/<path:filename>", methods=["GET"])
+def serve_static(filename):
+    """Explicit static asset server with correct MIME types."""
+    return send_from_directory(os.path.join(BASE_DIR, "static"), filename)
 
 
 if __name__ == "__main__":
