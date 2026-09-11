@@ -3,21 +3,34 @@ app.py - Flask Web Backend for Shift Handover Note Generator
 
 Provides:
 - GET / : Web Dashboard Interface
+- GET /login : NOC Operator Login Page
 - GET /api/status : Data Sources and System Health Monitor
 - POST /api/generate : Trigger Ingestion, Deduplication, 4-Section Generation & PDF Export
 - GET /api/download/<filename> : View/Download Generated PDF Document
+- GET /api/reports : Historical generated reports
+- GET /api/reports/<int:report_id> : Individual report details
+- GET /api/data/tickets : Stored tickets
+- GET /api/data/incidents : Stored incidents
 """
 
 import logging
 import os
 import sys
 from datetime import datetime, timezone
-from flask import Flask, jsonify, render_template, request, send_from_directory
+from flask import (
+    Flask,
+    jsonify,
+    render_template,
+    request,
+    send_file,
+    send_from_directory,
+)
 
 from database import (
     get_all_incidents,
     get_all_tickets,
     get_database_stats,
+    get_default_db_path,
     get_handover_report_by_id,
     get_handover_reports,
     init_db,
@@ -29,14 +42,6 @@ from fetch_activity import (
     get_source_status,
     parse_and_normalize_timestamp,
 )
-from flask import (
-    Flask,
-    jsonify,
-    render_template,
-    request,
-    send_file,
-    send_from_directory,
-)
 from generator import generate_dummy_handover, generate_handover
 from publisher import build_pdf_document
 
@@ -46,8 +51,46 @@ logging.basicConfig(
 )
 logger = logging.getLogger("app")
 
-app = Flask(__name__)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+
+def get_output_dir() -> str:
+    """Returns a safe, writable output directory for PDF generation."""
+    env_dir = os.getenv("OUTPUT_DIR")
+    if env_dir:
+        return env_dir
+    if os.getenv("VERCEL") or os.getenv("AWS_LAMBDA_FUNCTION_NAME"):
+        tmp_dir = "/tmp/output"
+        try:
+            os.makedirs(tmp_dir, exist_ok=True)
+        except OSError:
+            pass
+        return tmp_dir
+    try:
+        local_dir = os.path.join(BASE_DIR, "output")
+        os.makedirs(local_dir, exist_ok=True)
+        test_file = os.path.join(local_dir, ".write_test")
+        with open(test_file, "w") as f:
+            f.write("ok")
+        os.remove(test_file)
+        return local_dir
+    except (OSError, IOError, PermissionError):
+        tmp_dir = "/tmp/output"
+        try:
+            os.makedirs(tmp_dir, exist_ok=True)
+        except OSError:
+            pass
+        return tmp_dir
+
+
+app = Flask(
+    __name__,
+    template_folder=os.path.join(BASE_DIR, "templates"),
+    static_folder=os.path.join(BASE_DIR, "static"),
+    static_url_path="/static"
+)
 app.secret_key = os.getenv("SECRET_KEY", "shift-handover-secure-secret-key-2026")
+
 
 # Enable CORS for Flutter Web / Mobile clients
 @app.after_request
@@ -56,6 +99,7 @@ def add_cors_headers(response):
     response.headers["Access-Control-Allow-Headers"] = "Content-Type,Authorization"
     response.headers["Access-Control-Allow-Methods"] = "GET,POST,OPTIONS"
     return response
+
 
 @app.route("/api/generate", methods=["OPTIONS"])
 @app.route("/api/login", methods=["OPTIONS"])
@@ -66,6 +110,7 @@ def add_cors_headers(response):
 @app.route("/api/data/incidents", methods=["OPTIONS"])
 def api_options():
     return jsonify({"status": "ok"}), 200
+
 
 # Mock User Accounts for NOC & On-Call Teams
 DEMO_USERS = {
@@ -96,16 +141,15 @@ DEMO_USERS = {
 }
 
 # Configuration
-TICKETS_PATH = os.getenv("TICKETS_DATA_PATH", "data/tickets.json")
-INCIDENTS_PATH = os.getenv("INCIDENTS_DATA_PATH", "data/incidents.json")
-OUTPUT_DIR = os.getenv("OUTPUT_DIR", "output")
-DB_PATH = os.getenv("DB_PATH", "database/shift_handover.db")
-os.makedirs(OUTPUT_DIR, exist_ok=True)
+TICKETS_PATH = os.getenv("TICKETS_DATA_PATH", os.path.join(BASE_DIR, "data", "tickets.json"))
+INCIDENTS_PATH = os.getenv("INCIDENTS_DATA_PATH", os.path.join(BASE_DIR, "data", "incidents.json"))
+OUTPUT_DIR = get_output_dir()
+DB_PATH = get_default_db_path()
 
 # Initialize database & seed initial records
 try:
-    init_db()
-    seed_data_from_json(TICKETS_PATH, INCIDENTS_PATH)
+    init_db(DB_PATH)
+    seed_data_from_json(TICKETS_PATH, INCIDENTS_PATH, db_path=DB_PATH)
     logger.info("Database initialized and seeded successfully.")
 except Exception as err:
     logger.error(f"Database initialization error: {err}")
@@ -114,7 +158,11 @@ except Exception as err:
 @app.route("/login")
 def login_page():
     """Renders the NOC Login Page."""
-    return render_template("login.html")
+    try:
+        return render_template("login.html")
+    except Exception as e:
+        logger.error(f"Error rendering login page: {e}")
+        return jsonify({"error": "Unable to render login page"}), 500
 
 
 @app.route("/api/login", methods=["POST"])
@@ -122,37 +170,44 @@ def api_login():
     """
     Authenticates operator with email & password (or demo login).
     """
-    data = request.get_json(silent=True) or {}
-    email = (data.get("email") or "").strip().lower()
-    password = data.get("password") or ""
+    try:
+        data = request.get_json(silent=True) or {}
+        email = (data.get("email") or "").strip().lower()
 
-    if not email:
-        return jsonify({"success": False, "error": "Email is required."}), 400
+        if not email:
+            return jsonify({"success": False, "error": "Email is required."}), 400
 
-    user = DEMO_USERS.get(email, {
-        "email": email,
-        "name": email.split("@")[0].replace(".", " ").title(),
-        "role": "On-Call Engineer",
-        "team": "NOC Operations",
-        "badge": "Active On-Call",
-        "avatar": (email[:2]).upper()
-    })
+        user = DEMO_USERS.get(email, {
+            "email": email,
+            "name": email.split("@")[0].replace(".", " ").title(),
+            "role": "On-Call Engineer",
+            "team": "NOC Operations",
+            "badge": "Active On-Call",
+            "avatar": (email[:2]).upper()
+        })
 
-    return jsonify({
-        "success": True,
-        "message": "Authentication successful.",
-        "user": user,
-        "token": f"noc-token-{int(datetime.now().timestamp())}"
-    })
+        return jsonify({
+            "success": True,
+            "message": "Authentication successful.",
+            "user": user,
+            "token": f"noc-token-{int(datetime.now().timestamp())}"
+        })
+    except Exception as e:
+        logger.error(f"API login error: {e}")
+        return jsonify({"success": False, "error": "Authentication service error."}), 500
 
 
 @app.route("/api/me", methods=["GET"])
 def api_me():
     """Returns currently authenticated operator profile."""
-    return jsonify({
-        "authenticated": True,
-        "user": DEMO_USERS["operator@noc.internal"]
-    })
+    try:
+        return jsonify({
+            "authenticated": True,
+            "user": DEMO_USERS["operator@noc.internal"]
+        })
+    except Exception as e:
+        logger.error(f"API me error: {e}")
+        return jsonify({"authenticated": False, "error": "Internal server error"}), 500
 
 
 @app.route("/api/logout", methods=["POST"])
@@ -164,66 +219,83 @@ def api_logout():
 @app.route("/")
 def index():
     """Renders the main Shift Handover Web Dashboard."""
-    return render_template("index.html")
+    try:
+        return render_template("index.html")
+    except Exception as e:
+        logger.error(f"Error rendering index page: {e}")
+        return jsonify({"error": "Unable to render dashboard"}), 500
 
 
 @app.route("/api/status", methods=["GET"])
 def api_status():
     """Returns connected data sources health, PostgreSQL / SQLite database info and record counts."""
-    tickets_status = get_source_status(TICKETS_PATH, "Ticketing")
-    incidents_status = get_source_status(INCIDENTS_PATH, "Incident Management")
-    db_stats = get_database_stats()
+    try:
+        tickets_status = get_source_status(TICKETS_PATH, "Ticketing")
+        incidents_status = get_source_status(INCIDENTS_PATH, "Incident Management")
+        db_stats = get_database_stats(DB_PATH)
 
-    all_connected = tickets_status["connected"] and incidents_status["connected"] and db_stats["connected"]
-    
-    return jsonify({
-        "status": "READY" if all_connected else "DEGRADED",
-        "timestamp": datetime.now(timezone.utc).isoformat(),
-        "database": db_stats,
-        "sources": [tickets_status, incidents_status]
-    })
+        all_connected = tickets_status.get("connected", False) and incidents_status.get("connected", False) and db_stats.get("connected", False)
+        
+        return jsonify({
+            "status": "READY" if all_connected else "DEGRADED",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "database": db_stats,
+            "sources": [tickets_status, incidents_status]
+        })
+    except Exception as e:
+        logger.error(f"Error in api_status: {e}")
+        return jsonify({
+            "status": "DEGRADED",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "error": "Failed to retrieve system status",
+            "sources": []
+        }), 500
 
 
 @app.route("/api/data/tickets", methods=["GET"])
 def api_data_tickets():
     """Returns all ticket records stored in database."""
     try:
-        tickets = get_all_tickets()
+        tickets = get_all_tickets(DB_PATH)
         return jsonify({"success": True, "count": len(tickets), "tickets": tickets})
     except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500
+        logger.error(f"Error in api_data_tickets: {e}")
+        return jsonify({"success": False, "error": "Failed to fetch tickets"}), 500
 
 
 @app.route("/api/data/incidents", methods=["GET"])
 def api_data_incidents():
     """Returns all incident records stored in database."""
     try:
-        incidents = get_all_incidents()
+        incidents = get_all_incidents(DB_PATH)
         return jsonify({"success": True, "count": len(incidents), "incidents": incidents})
     except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500
+        logger.error(f"Error in api_data_incidents: {e}")
+        return jsonify({"success": False, "error": "Failed to fetch incidents"}), 500
 
 
 @app.route("/api/reports", methods=["GET"])
 def api_reports_list():
     """Returns historical generated handover reports from database."""
     try:
-        reports = get_handover_reports(limit=100)
+        reports = get_handover_reports(limit=100, db_path=DB_PATH)
         return jsonify({"success": True, "count": len(reports), "reports": reports})
     except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500
+        logger.error(f"Error in api_reports_list: {e}")
+        return jsonify({"success": False, "error": "Failed to fetch reports"}), 500
 
 
 @app.route("/api/reports/<int:report_id>", methods=["GET"])
 def api_report_detail(report_id):
     """Returns full details and classified items of a specific handover report."""
     try:
-        report = get_handover_report_by_id(report_id)
+        report = get_handover_report_by_id(report_id, db_path=DB_PATH)
         if not report:
             return jsonify({"success": False, "error": f"Report #{report_id} not found."}), 404
         return jsonify({"success": True, "report": report})
     except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500
+        logger.error(f"Error in api_report_detail: {e}")
+        return jsonify({"success": False, "error": "Failed to fetch report details"}), 500
 
 
 @app.route("/api/generate", methods=["POST"])
@@ -236,44 +308,44 @@ def api_generate():
         "shift_end": "2026-09-03T20:00:00+05:30"
     }
     """
-    data = request.get_json(silent=True) or {}
-    
-    start_str = data.get("shift_start")
-    end_str = data.get("shift_end")
-    dummy_mode = data.get("dummy", False)
-
-    # 1. Validation
-    if not start_str or not end_str:
-        return jsonify({
-            "success": False,
-            "error": "Both 'shift_start' and 'shift_end' are required ISO timestamps."
-        }), 400
-
-    start_dt = parse_and_normalize_timestamp(start_str)
-    end_dt = parse_and_normalize_timestamp(end_str)
-
-    if not start_dt:
-        return jsonify({
-            "success": False,
-            "error": f"Invalid 'shift_start' timestamp format: '{start_str}'"
-        }), 400
-
-    if not end_dt:
-        return jsonify({
-            "success": False,
-            "error": f"Invalid 'shift_end' timestamp format: '{end_str}'"
-        }), 400
-
-    if start_dt >= end_dt:
-        return jsonify({
-            "success": False,
-            "error": f"Shift start ({start_dt.isoformat()}) must be strictly earlier than shift end ({end_dt.isoformat()})."
-        }), 400
-
-    start_utc = start_dt.strftime("%Y-%m-%d %H:%M:%S UTC")
-    end_utc = end_dt.strftime("%Y-%m-%d %H:%M:%S UTC")
-
     try:
+        data = request.get_json(silent=True) or {}
+        
+        start_str = data.get("shift_start")
+        end_str = data.get("shift_end")
+        dummy_mode = data.get("dummy", False)
+
+        # 1. Validation
+        if not start_str or not end_str:
+            return jsonify({
+                "success": False,
+                "error": "Both 'shift_start' and 'shift_end' are required ISO timestamps."
+            }), 400
+
+        start_dt = parse_and_normalize_timestamp(start_str)
+        end_dt = parse_and_normalize_timestamp(end_str)
+
+        if not start_dt:
+            return jsonify({
+                "success": False,
+                "error": f"Invalid 'shift_start' timestamp format: '{start_str}'"
+            }), 400
+
+        if not end_dt:
+            return jsonify({
+                "success": False,
+                "error": f"Invalid 'shift_end' timestamp format: '{end_str}'"
+            }), 400
+
+        if start_dt >= end_dt:
+            return jsonify({
+                "success": False,
+                "error": f"Shift start ({start_dt.isoformat()}) must be strictly earlier than shift end ({end_dt.isoformat()})."
+            }), 400
+
+        start_utc = start_dt.strftime("%Y-%m-%d %H:%M:%S UTC")
+        end_utc = end_dt.strftime("%Y-%m-%d %H:%M:%S UTC")
+
         # 2. Ingestion & Pipeline from PostgreSQL / SQLite
         if dummy_mode:
             sections = generate_dummy_handover()
@@ -283,7 +355,7 @@ def api_generate():
                 {"path": TICKETS_PATH, "name": "Ticketing"},
                 {"path": INCIDENTS_PATH, "name": "Incident"}
             ]
-            raw_events = fetch_activities(sources, start_dt, end_dt, use_db=True)
+            raw_events = fetch_activities(sources, start_dt, end_dt, use_db=True, db_path=DB_PATH)
             total_raw = len(raw_events)
             sections = generate_handover(raw_events)
 
@@ -300,7 +372,8 @@ def api_generate():
             "total_items": total_raw
         }
 
-        build_pdf_document(sections, pdf_path, shift_meta)
+        final_pdf_path = build_pdf_document(sections, pdf_path, shift_meta)
+        actual_filename = os.path.basename(final_pdf_path)
 
         completed_items = sections.get("COMPLETED", [])
         in_progress_items = sections.get("IN PROGRESS", [])
@@ -321,9 +394,10 @@ def api_generate():
                 in_progress_count=len(in_progress_items),
                 blockers_count=len(blockers_items),
                 watchlist_count=len(watch_list_items),
-                pdf_filename=pdf_filename,
-                pdf_path=pdf_path,
-                sections=sections
+                pdf_filename=actual_filename,
+                pdf_path=final_pdf_path,
+                sections=sections,
+                db_path=DB_PATH
             )
             logger.info(f"Handover report stored in database with ID #{report_id}")
         except Exception as db_e:
@@ -333,8 +407,8 @@ def api_generate():
             "success": True,
             "message": "Handover note generated successfully.",
             "report_id": report_id,
-            "pdf_url": f"/api/download/{pdf_filename}",
-            "pdf_filename": pdf_filename,
+            "pdf_url": f"/api/download/{actual_filename}",
+            "pdf_filename": actual_filename,
             "metrics": {
                 "total_raw_events": total_raw,
                 "total_collapsed_items": total_collapsed,
@@ -374,9 +448,19 @@ def download_pdf(filename):
     Properly sets Content-Type: application/pdf and Content-Disposition.
     """
     safe_filename = os.path.basename(filename)
-    file_path = os.path.abspath(os.path.join(OUTPUT_DIR, safe_filename))
+    candidates = [
+        os.path.join(OUTPUT_DIR, safe_filename),
+        os.path.join("/tmp/output", safe_filename),
+        os.path.join("/tmp", safe_filename),
+        os.path.join(os.path.join(BASE_DIR, "output"), safe_filename)
+    ]
+    file_path = None
+    for cand in candidates:
+        if os.path.exists(cand):
+            file_path = os.path.abspath(cand)
+            break
     
-    if not os.path.exists(file_path):
+    if not file_path:
         return jsonify({
             "success": False,
             "error": f"Report file '{safe_filename}' not found."
@@ -408,4 +492,3 @@ if __name__ == "__main__":
     host = os.getenv("FLASK_HOST", "0.0.0.0")
     print(f"⚡ SHIFT//HANDOVER Web Dashboard running at http://localhost:{port}")
     app.run(host=host, port=port, debug=False)
-

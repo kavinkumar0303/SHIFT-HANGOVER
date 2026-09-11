@@ -18,6 +18,8 @@ from dateutil import parser as date_parser
 
 logger = logging.getLogger(__name__)
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 
 def parse_and_normalize_timestamp(ts_input: Any) -> Optional[datetime]:
     """
@@ -64,19 +66,32 @@ def parse_and_normalize_timestamp(ts_input: Any) -> Optional[datetime]:
         return None
 
 
+def resolve_file_path(file_path: str) -> str:
+    """Resolves relative file paths against cwd and BASE_DIR."""
+    if os.path.exists(file_path):
+        return file_path
+    if not os.path.isabs(file_path):
+        alt = os.path.join(BASE_DIR, file_path)
+        if os.path.exists(alt):
+            return alt
+    return file_path
+
+
 def load_source_data(file_path: str, default_source_name: str = "Generic Source") -> List[Dict[str, Any]]:
     """
     Safely loads JSON data from a file path.
     Gracefully catches missing files, unreadable permissions, or malformed JSON
     without terminating the application.
     """
-    if not os.path.exists(file_path):
-        logger.warning(f"Source file not found: '{file_path}'. Proceeding with empty dataset.")
+    actual_path = resolve_file_path(file_path)
+
+    if not os.path.exists(actual_path):
+        logger.warning(f"Source file not found: '{file_path}' (resolved: '{actual_path}'). Proceeding with empty dataset.")
         print(f"[WARN] Source unreachable: '{file_path}' (File not found)", file=sys.stderr)
         return []
 
     try:
-        with open(file_path, "r", encoding="utf-8") as f:
+        with open(actual_path, "r", encoding="utf-8") as f:
             data = json.load(f)
             if isinstance(data, list):
                 standardized = []
@@ -102,15 +117,15 @@ def load_source_data(file_path: str, default_source_name: str = "Generic Source"
                 items = data.get("items") or data.get("tickets") or data.get("incidents") or [data]
                 return [dict(i) for i in items if isinstance(i, dict)]
             else:
-                logger.warning(f"Unexpected JSON root type in '{file_path}': {type(data)}")
+                logger.warning(f"Unexpected JSON root type in '{actual_path}': {type(data)}")
                 return []
     except json.JSONDecodeError as e:
-        logger.warning(f"JSON decode error in '{file_path}': {e}. Skipping source.")
-        print(f"[WARN] Corrupted JSON in source: '{file_path}': {e}", file=sys.stderr)
+        logger.warning(f"JSON decode error in '{actual_path}': {e}. Skipping source.")
+        print(f"[WARN] Corrupted JSON in source: '{actual_path}': {e}", file=sys.stderr)
         return []
     except Exception as e:
-        logger.warning(f"Failed to read source file '{file_path}': {e}. Skipping source.")
-        print(f"[WARN] Error reading source '{file_path}': {e}", file=sys.stderr)
+        logger.warning(f"Failed to read source file '{actual_path}': {e}. Skipping source.")
+        print(f"[WARN] Error reading source '{actual_path}': {e}", file=sys.stderr)
         return []
 
 
@@ -118,7 +133,8 @@ def get_source_status(file_path: str, source_name: str) -> Dict[str, Any]:
     """
     Returns health status and available record count for a source.
     """
-    if not os.path.exists(file_path):
+    actual_path = resolve_file_path(file_path)
+    if not os.path.exists(actual_path):
         return {
             "name": source_name,
             "path": file_path,
@@ -127,7 +143,7 @@ def get_source_status(file_path: str, source_name: str) -> Dict[str, Any]:
             "total_records": 0
         }
     try:
-        records = load_source_data(file_path, source_name)
+        records = load_source_data(actual_path, source_name)
         return {
             "name": source_name,
             "path": file_path,
@@ -147,7 +163,8 @@ def get_source_status(file_path: str, source_name: str) -> Dict[str, Any]:
 
 def fetch_activities_from_db(
     shift_start: datetime,
-    shift_end: datetime
+    shift_end: datetime,
+    db_path: Optional[str] = None
 ) -> List[Dict[str, Any]]:
     """
     Fetches activity items directly from the active database (PostgreSQL / SQLite)
@@ -155,11 +172,16 @@ def fetch_activities_from_db(
     """
     from database import get_all_activities_from_db, init_db, seed_data_from_json
     
-    init_db()
-    raw_records = get_all_activities_from_db()
-    if not raw_records:
-        seed_data_from_json()
-        raw_records = get_all_activities_from_db()
+    try:
+        init_db(db_path)
+        raw_records = get_all_activities_from_db(db_path)
+        if not raw_records:
+            seed_data_from_json(db_path=db_path)
+            raw_records = get_all_activities_from_db(db_path)
+    except Exception as db_err:
+        logger.warning(f"Database query failed ({db_err}). Falling back to JSON source files.")
+        raw_records = []
+
     norm_start = parse_and_normalize_timestamp(shift_start)
     norm_end = parse_and_normalize_timestamp(shift_end)
 
@@ -168,6 +190,14 @@ def fetch_activities_from_db(
 
     if norm_start >= norm_end:
         raise ValueError(f"Invalid shift window: shift_start ({norm_start.isoformat()}) must be earlier than shift_end ({norm_end.isoformat()})")
+
+    # If DB had no records or failed, fall back to JSON feeds directly
+    if not raw_records:
+        sources = [
+            {"path": os.path.join(BASE_DIR, "data/tickets.json"), "name": "Ticketing"},
+            {"path": os.path.join(BASE_DIR, "data/incidents.json"), "name": "Incident"}
+        ]
+        return fetch_activities(sources, shift_start, shift_end, use_db=False)
 
     filtered_events = []
 
@@ -201,14 +231,14 @@ def fetch_activities(
     shift_start: datetime = None,
     shift_end: datetime = None,
     use_db: bool = False,
-    db_path: str = "database/shift_handover.db"
+    db_path: Optional[str] = None
 ) -> List[Dict[str, Any]]:
     """
     Fetches activity items either from SQLite database or from provided source paths.
     Applies timezone normalization and half-open shift window [shift_start, shift_end) filtering.
     """
     if use_db or sources is None or len(sources) == 0:
-        return fetch_activities_from_db(shift_start, shift_end)
+        return fetch_activities_from_db(shift_start, shift_end, db_path=db_path)
 
     norm_start = parse_and_normalize_timestamp(shift_start)
     norm_end = parse_and_normalize_timestamp(shift_end)

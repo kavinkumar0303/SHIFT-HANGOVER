@@ -10,8 +10,9 @@ Tests:
 6. Traceability guarantees (Record ID, Source, Timestamp, Summary)
 7. PDF publisher rendering & 'Nothing to report.' display
 8. Non-zero error exit codes on CLI failures
-9. Web API Endpoints (/api/status, /api/generate, /api/download)
+9. Web API Endpoints (/api/status, /api/generate, /api/download, /api/reports, /api/login, /api/me)
 10. Deterministic identical runs verification
+11. Vercel Serverless Function & Auth Tests
 """
 
 import json
@@ -21,7 +22,8 @@ import sys
 from datetime import datetime, timezone
 import pytest
 
-from app import app
+from app import app, get_output_dir
+from database import get_default_db_path
 from fetch_activity import fetch_activities, get_source_status, load_source_data, parse_and_normalize_timestamp
 from generator import (
     classify_into_sections,
@@ -427,3 +429,52 @@ def test_pdf_download_headers_and_content(client):
     assert "attachment" in res_download.headers["Content-Disposition"]
     assert res_download.data.startswith(b"%PDF-")
 
+
+# ==========================================
+# 11. Vercel Serverless Function & Auth Tests
+# ==========================================
+
+def test_vercel_serverless_entrypoint():
+    import api.index as vercel_entry
+    assert hasattr(vercel_entry, "app")
+    assert vercel_entry.app is not None
+
+
+def test_vercel_environment_writable_paths(monkeypatch):
+    monkeypatch.setenv("VERCEL", "1")
+    db_path = get_default_db_path()
+    assert db_path.startswith("/tmp")
+
+    out_dir = get_output_dir()
+    assert out_dir.startswith("/tmp")
+
+
+def test_auth_and_user_endpoints(client):
+    # Test Login
+    login_res = client.post("/api/login", json={"email": "operator@noc.internal", "password": "any"})
+    assert login_res.status_code == 200
+    login_data = login_res.get_json()
+    assert login_data["success"] is True
+    assert "token" in login_data
+
+    # Test /api/me
+    me_res = client.get("/api/me")
+    assert me_res.status_code == 200
+    me_data = me_res.get_json()
+    assert me_data["authenticated"] is True
+
+    # Test Logout
+    logout_res = client.post("/api/logout")
+    assert logout_res.status_code == 200
+
+
+def test_html_pages_render(client):
+    # Dashboard
+    res_index = client.get("/")
+    assert res_index.status_code == 200
+    assert b"SHIFT" in res_index.data
+
+    # Login
+    res_login = client.get("/login")
+    assert res_login.status_code == 200
+    assert b"Login" in res_login.data

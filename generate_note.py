@@ -109,10 +109,15 @@ def run_pipeline(
 
     # Determine output path
     if not output_pdf_path:
-        os.makedirs("output", exist_ok=True)
+        out_dir = "output"
+        try:
+            os.makedirs(out_dir, exist_ok=True)
+        except OSError:
+            out_dir = "/tmp/output"
+            os.makedirs(out_dir, exist_ok=True)
         filename_start = start_dt.strftime("%Y%m%d_%H%M%S")
         filename_end = end_dt.strftime("%Y%m%d_%H%M%S")
-        output_pdf_path = f"output/handover_note_{filename_start}_to_{filename_end}.pdf"
+        output_pdf_path = os.path.join(out_dir, f"handover_note_{filename_start}_to_{filename_end}.pdf")
 
     print("=" * 65)
     print("🚀 SHIFT//HANDOVER — Automated Shift Handover Intelligence")

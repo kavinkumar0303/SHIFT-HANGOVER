@@ -115,12 +115,23 @@ def build_pdf_document(
 ) -> str:
     """
     Renders the official Shift Handover Note PDF.
+    Guarantees writing to a safe, writable path if the target directory is read-only.
     """
     try:
         abs_output_path = os.path.abspath(output_path)
         out_dir = os.path.dirname(abs_output_path)
-        if out_dir:
-            os.makedirs(out_dir, exist_ok=True)
+        try:
+            if out_dir:
+                os.makedirs(out_dir, exist_ok=True)
+                test_file = os.path.join(out_dir, ".write_test")
+                with open(test_file, "w") as f:
+                    f.write("ok")
+                os.remove(test_file)
+        except (OSError, IOError, PermissionError):
+            safe_filename = os.path.basename(output_path)
+            tmp_out_dir = "/tmp/output"
+            os.makedirs(tmp_out_dir, exist_ok=True)
+            abs_output_path = os.path.join(tmp_out_dir, safe_filename)
 
         doc = SimpleDocTemplate(
             abs_output_path,
