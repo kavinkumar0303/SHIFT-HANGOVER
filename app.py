@@ -237,6 +237,25 @@ def index():
         return jsonify({"error": "Unable to render dashboard"}), 500
 
 
+@app.route("/api/debug-env", methods=["GET"])
+@app.route("/api/index/api/debug-env", methods=["GET"])
+@app.route("/api/index.py/api/debug-env", methods=["GET"])
+def api_debug_env():
+    """Diagnostic endpoint to inspect request headers and environ for serverless troubleshooting."""
+    safe_environ = {}
+    for k, v in request.environ.items():
+        if isinstance(v, (str, int, float, bool, list, dict)):
+            safe_environ[k] = v
+        else:
+            safe_environ[k] = str(type(v))
+    return jsonify({
+        "path": request.path,
+        "method": request.method,
+        "headers": dict(request.headers),
+        "environ": safe_environ
+    })
+
+
 @app.route("/api/status", methods=["GET"])
 @app.route("/api/index/api/status", methods=["GET"])
 @app.route("/api/index.py/api/status", methods=["GET"])
