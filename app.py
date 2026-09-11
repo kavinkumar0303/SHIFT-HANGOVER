@@ -156,6 +156,8 @@ except Exception as err:
 
 
 @app.route("/login")
+@app.route("/api/index/login")
+@app.route("/api/index.py/login")
 def login_page():
     """Renders the NOC Login Page."""
     try:
@@ -166,6 +168,8 @@ def login_page():
 
 
 @app.route("/api/login", methods=["POST"])
+@app.route("/api/index/api/login", methods=["POST"])
+@app.route("/api/index.py/api/login", methods=["POST"])
 def api_login():
     """
     Authenticates operator with email & password (or demo login).
@@ -198,6 +202,8 @@ def api_login():
 
 
 @app.route("/api/me", methods=["GET"])
+@app.route("/api/index/api/me", methods=["GET"])
+@app.route("/api/index.py/api/me", methods=["GET"])
 def api_me():
     """Returns currently authenticated operator profile."""
     try:
@@ -211,12 +217,16 @@ def api_me():
 
 
 @app.route("/api/logout", methods=["POST"])
+@app.route("/api/index/api/logout", methods=["POST"])
+@app.route("/api/index.py/api/logout", methods=["POST"])
 def api_logout():
     """Logs out current operator."""
     return jsonify({"success": True, "message": "Logged out successfully."})
 
 
 @app.route("/")
+@app.route("/api/index")
+@app.route("/api/index.py")
 def index():
     """Renders the main Shift Handover Web Dashboard."""
     try:
@@ -227,6 +237,8 @@ def index():
 
 
 @app.route("/api/status", methods=["GET"])
+@app.route("/api/index/api/status", methods=["GET"])
+@app.route("/api/index.py/api/status", methods=["GET"])
 def api_status():
     """Returns connected data sources health, PostgreSQL / SQLite database info and record counts."""
     try:
@@ -253,6 +265,8 @@ def api_status():
 
 
 @app.route("/api/data/tickets", methods=["GET"])
+@app.route("/api/index/api/data/tickets", methods=["GET"])
+@app.route("/api/index.py/api/data/tickets", methods=["GET"])
 def api_data_tickets():
     """Returns all ticket records stored in database."""
     try:
@@ -264,6 +278,8 @@ def api_data_tickets():
 
 
 @app.route("/api/data/incidents", methods=["GET"])
+@app.route("/api/index/api/data/incidents", methods=["GET"])
+@app.route("/api/index.py/api/data/incidents", methods=["GET"])
 def api_data_incidents():
     """Returns all incident records stored in database."""
     try:
@@ -275,6 +291,8 @@ def api_data_incidents():
 
 
 @app.route("/api/reports", methods=["GET"])
+@app.route("/api/index/api/reports", methods=["GET"])
+@app.route("/api/index.py/api/reports", methods=["GET"])
 def api_reports_list():
     """Returns historical generated handover reports from database."""
     try:
@@ -286,6 +304,8 @@ def api_reports_list():
 
 
 @app.route("/api/reports/<int:report_id>", methods=["GET"])
+@app.route("/api/index/api/reports/<int:report_id>", methods=["GET"])
+@app.route("/api/index.py/api/reports/<int:report_id>", methods=["GET"])
 def api_report_detail(report_id):
     """Returns full details and classified items of a specific handover report."""
     try:
@@ -299,6 +319,8 @@ def api_report_detail(report_id):
 
 
 @app.route("/api/generate", methods=["POST"])
+@app.route("/api/index/api/generate", methods=["POST"])
+@app.route("/api/index.py/api/generate", methods=["POST"])
 def api_generate():
     """
     Main Generation API:
@@ -442,6 +464,8 @@ def api_generate():
 @app.route("/api/download/<filename>", methods=["GET"])
 @app.route("/api/pdf/<filename>", methods=["GET"])
 @app.route("/output/<filename>", methods=["GET"])
+@app.route("/api/index/api/download/<filename>", methods=["GET"])
+@app.route("/api/index.py/api/download/<filename>", methods=["GET"])
 def download_pdf(filename):
     """
     Serves generated PDF for in-browser preview or attachment download.
