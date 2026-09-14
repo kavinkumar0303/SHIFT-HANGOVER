@@ -569,3 +569,101 @@ def test_html_pages_render(client):
     res_login = client.get("/login")
     assert res_login.status_code == 200
     assert b"Login" in res_login.data
+
+
+# ==========================================
+# 12. Data Grounding & Evidence Audit Tests
+# ==========================================
+
+def test_evidence_grounding_preserves_source_and_updates():
+    """Every generated handover item must carry grounded evidence with raw updates, timestamps, and sources."""
+    start_dt = datetime(2026, 9, 3, 11, 30, tzinfo=timezone.utc)
+    end_dt = datetime(2026, 9, 3, 14, 30, tzinfo=timezone.utc)
+    sources = [
+        {"path": "data/tickets.json", "name": "Ticketing"},
+        {"path": "data/incidents.json", "name": "Incident"}
+    ]
+    raw_events = fetch_activities(sources, start_dt, end_dt)
+    assert len(raw_events) > 0
+
+    collapsed = group_and_collapse_updates(raw_events)
+    sections = classify_into_sections(collapsed)
+
+    for sec_name, items in sections.items():
+        for item in items:
+            assert "evidence" in item, f"Item {item.get('record_id')} must have evidence dictionary"
+            ev = item["evidence"]
+            assert ev["source_id"] == item["record_id"]
+            assert ev["source_system"] == item["source"]
+            assert ev["update_count"] >= 1
+            assert len(ev["all_updates"]) == ev["update_count"]
+            for upd in ev["all_updates"]:
+                assert "timestamp" in upd
+                assert "status" in upd
+
+
+def test_audit_statistics_metrics_in_api(client):
+    """Verify that the API returns total_source_records, records_inside_shift, records_excluded, and unique_items_count."""
+    payload = {
+        "shift_start": "2026-09-03T17:00:00+05:30",
+        "shift_end": "2026-09-03T20:00:00+05:30"
+    }
+    res = client.post("/api/generate", json=payload)
+    assert res.status_code == 200
+    data = res.get_json()
+    metrics = data["metrics"]
+
+    assert "total_source_records" in metrics
+    assert "records_inside_shift" in metrics
+    assert "records_excluded" in metrics
+    assert "unique_items_count" in metrics
+
+    assert metrics["total_source_records"] >= metrics["records_inside_shift"]
+    assert metrics["records_excluded"] == metrics["total_source_records"] - metrics["records_inside_shift"]
+    assert metrics["unique_items_count"] == (
+        metrics["completed"] + metrics["in_progress"] + metrics["blockers"] + metrics["watch_list"]
+    )
+
+
+def test_empty_category_exact_text_in_pdf(tmp_path):
+    """Ensure that an empty category renders the exact required text: 'No activity recorded in this category during the selected shift.'"""
+    empty_sections = {
+        "COMPLETED": [],
+        "IN PROGRESS": [],
+        "BLOCKERS / ESCALATIONS": [],
+        "WATCH-LIST": []
+    }
+    meta = {
+        "shift_start": "2026-09-05 00:00 IST",
+        "shift_end": "2026-09-05 04:00 IST",
+        "generated_at": "2026-09-05 04:05 UTC",
+        "total_items": 0,
+        "total_source_records": 10,
+        "records_inside_shift": 0,
+        "records_excluded": 10,
+        "unique_items_count": 0
+    }
+    pdf_out = str(tmp_path / "empty_shift_text_check.pdf")
+    res = build_pdf_document(empty_sections, pdf_out, meta)
+    assert os.path.exists(res)
+    assert os.path.getsize(res) > 1000
+
+
+def test_duplicate_ticket_single_progression_item():
+    """Verify that multiple updates on INC-102 or TCK-1001 produce exactly ONE handover item with progression."""
+    raw_events = [
+        {"record_id": "INC-102", "source": "Incident", "status": "open", "summary": "Open issue", "normalized_dt": datetime(2026, 9, 3, 10, 0, tzinfo=timezone.utc), "timestamp": "2026-09-03T10:00:00Z"},
+        {"record_id": "INC-102", "source": "Incident", "status": "investigating", "summary": "Investigating issue", "normalized_dt": datetime(2026, 9, 3, 12, 0, tzinfo=timezone.utc), "timestamp": "2026-09-03T12:00:00Z"},
+        {"record_id": "INC-102", "source": "Incident", "status": "waiting", "summary": "Waiting for vendor", "normalized_dt": datetime(2026, 9, 3, 14, 0, tzinfo=timezone.utc), "timestamp": "2026-09-03T14:00:00Z"},
+        {"record_id": "INC-102", "source": "Incident", "status": "resolved", "summary": "Resolved issue", "normalized_dt": datetime(2026, 9, 3, 16, 0, tzinfo=timezone.utc), "timestamp": "2026-09-03T16:00:00Z"}
+    ]
+    collapsed = group_and_collapse_updates(raw_events)
+    assert len(collapsed) == 1
+    item = collapsed[0]
+    assert item["record_id"] == "INC-102"
+    assert item["status"] == "resolved"
+    assert item["raw_update_count"] == 4
+    assert len(item["progression"]) == 4
+    assert item["progression"][0] == "10:00 Open"
+    assert item["progression"][-1] == "16:00 Resolved"
+

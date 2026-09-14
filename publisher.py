@@ -230,14 +230,17 @@ def build_pdf_document(
         start_str = shift_metadata.get("shift_start", "N/A")
         end_str = shift_metadata.get("shift_end", "N/A")
         total_items = shift_metadata.get("total_items", 0)
+        inside_count = shift_metadata.get("records_inside_shift", total_items)
+        excluded_count = shift_metadata.get("records_excluded", 0)
+        unique_count = shift_metadata.get("unique_items_count", sum(len(items) for items in sections.values()))
 
         meta_box_data = [
             [
-                Paragraph(f"<b>Shift Window:</b> {start_str}  -&gt;  {end_str}", subtitle_style),
-                Paragraph(f"<b>Total Activities:</b> {total_items}", subtitle_style)
+                Paragraph(f"<b>Shift Window:</b> {start_str}  -&gt;  {end_str}<br/><b>Audit Filter:</b> [shift_start, shift_end) half-open interval", subtitle_style),
+                Paragraph(f"<b>Total Feed Records:</b> {total_items}<br/><b>Included:</b> {inside_count} | <b>Excluded:</b> {excluded_count} | <b>Unique:</b> {unique_count}", subtitle_style)
             ]
         ]
-        t_meta = Table(meta_box_data, colWidths=[360, 180])
+        t_meta = Table(meta_box_data, colWidths=[330, 210])
         t_meta.setStyle(TableStyle([
             ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#F8FAFC")),
             ("BOX", (0, 0), (-1, -1), 1, colors.HexColor("#E2E8F0")),
@@ -310,8 +313,7 @@ def build_pdf_document(
             section_elements = [sec_header_table, Spacer(1, 4)]
 
             if not items:
-                # Standard requirement: Empty sections must display "Nothing to report."
-                empty_p = Paragraph("<i>Nothing to report.</i>", empty_note_style)
+                empty_p = Paragraph("<i>No activity recorded in this category during the selected shift.</i>", empty_note_style)
                 empty_box = Table([[empty_p]], colWidths=[540])
                 empty_box.setStyle(TableStyle([
                     ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#F8FAFC")),

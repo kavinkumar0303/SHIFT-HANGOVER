@@ -151,7 +151,7 @@ def run_pipeline(
         items = sections.get(sec_name, [])
         print(f"  • {sec_name}: {len(items)} item(s)")
         if not items:
-            print("     - Nothing to report.")
+            print("     - No activity recorded in this category during the selected shift.")
         for itm in items:
             rec_id = itm.get("record_id", "N/A")
             summary = itm.get("summary", "")

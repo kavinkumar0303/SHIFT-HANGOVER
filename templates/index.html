@@ -3,1427 +3,227 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SHIFT//HANDOVER — Automated Shift Handover Intelligence</title>
+  <title>SHIFT//HANDOVER — Industrial Shift Machine & Handover Intelligence</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/style.css">
-  <style>
-/* Embedded Design System for Instant Zero-FOUC Render */
-/* ==========================================================================
-   SHIFT//HANDOVER — Visual Design System: OBSIDIAN + ELECTRIC MINT
-   Enterprise NOC-Grade Theme
-   ========================================================================== */
-
-:root {
-  /* Color System */
-  --bg-primary: #070B0A;
-  --bg-secondary: #0D1412;
-  --bg-card: #121C19;
-  --bg-card-hover: #172722;
-  --bg-input: #0A110F;
-
-  --accent-primary: #00E5A0;
-  --accent-bright: #5CFFC1;
-  --accent-glow: rgba(0, 229, 160, 0.15);
-  
-  --color-completed: #00D68F;
-  --color-in-progress: #38BDF8;
-  --color-blockers: #FF5C5C;
-  --color-watch: #FFC857;
-
-  --text-main: #F1F5F3;
-  --text-secondary: #8FA39C;
-  --text-muted: #5C726A;
-
-  --border-color: #20332D;
-  --border-hover: #2F4D44;
-  --border-accent: rgba(0, 229, 160, 0.35);
-
-  /* Typography */
-  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
-
-  /* Layout & Transitions */
-  --sidebar-width: 260px;
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
-  --transition-fast: 0.18s ease;
-  --transition-normal: 0.28s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-/* Reset & Box Sizing */
-*, *::before, *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-body {
-  background-color: var(--bg-primary);
-  color: var(--text-main);
-  font-family: var(--font-sans);
-  font-size: 14px;
-  line-height: 1.5;
-  min-height: 100vh;
-  overflow-x: hidden;
-  -webkit-font-smoothing: antialiased;
-}
-
-/* SVG Constraints */
-svg {
-  display: inline-block;
-  vertical-align: middle;
-  flex-shrink: 0;
-  max-width: 100%;
-}
-.brand-icon {
-  width: 28px !important;
-  height: 28px !important;
-  min-width: 28px !important;
-  max-width: 28px !important;
-}
-.heading-icon, .source-icon, .btn-icon {
-  width: 18px !important;
-  height: 18px !important;
-  min-width: 18px !important;
-  max-width: 18px !important;
-}
-.sidebar-nav svg {
-  width: 18px !important;
-  height: 18px !important;
-}
-.header-actions svg {
-  width: 16px !important;
-  height: 16px !important;
-}
-
-/* App Shell */
-.app-container {
-  display: flex;
-  min-height: 100vh;
-}
-
-/* ==========================================================================
-   SIDEBAR
-   ========================================================================== */
-
-.sidebar {
-  width: var(--sidebar-width);
-  background-color: var(--bg-secondary);
-  border-right: 1px solid var(--border-color);
-  display: flex;
-  flex-direction: column;
-  position: fixed;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  z-index: 100;
-  padding: 24px 16px;
-}
-
-.brand-container {
-  margin-bottom: 32px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.brand-logo {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.brand-icon {
-  width: 28px;
-  height: 28px;
-  color: var(--accent-primary);
-  filter: drop-shadow(0 0 6px rgba(0, 229, 160, 0.4));
-}
-
-.brand-text {
-  display: flex;
-  flex-direction: column;
-}
-
-.brand-title {
-  font-family: var(--font-mono);
-  font-weight: 700;
-  font-size: 15px;
-  letter-spacing: 0.5px;
-  color: var(--text-main);
-}
-
-.accent-slash {
-  color: var(--accent-primary);
-}
-
-.brand-tag {
-  font-size: 9px;
-  font-weight: 600;
-  letter-spacing: 1.5px;
-  color: var(--text-muted);
-}
-
-.sidebar-nav {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  flex: 1;
-}
-
-.nav-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 14px;
-  border-radius: var(--radius-sm);
-  color: var(--text-secondary);
-  text-decoration: none;
-  font-size: 13px;
-  font-weight: 500;
-  transition: all var(--transition-fast);
-  border: 1px solid transparent;
-}
-
-.nav-item svg {
-  width: 18px;
-  height: 18px;
-}
-
-.nav-item:hover {
-  color: var(--text-main);
-  background-color: var(--bg-card);
-  border-color: var(--border-color);
-}
-
-.nav-item.active {
-  color: var(--accent-primary);
-  background-color: rgba(0, 229, 160, 0.08);
-  border-color: var(--border-accent);
-  font-weight: 600;
-}
-
-.sidebar-footer {
-  padding-top: 16px;
-  border-top: 1px solid var(--border-color);
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.system-status-badge {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background-color: var(--bg-card);
-  border: 1px solid var(--border-color);
-  padding: 6px 10px;
-  border-radius: var(--radius-sm);
-}
-
-.status-pulse-dot {
-  width: 8px;
-  height: 8px;
-  background-color: var(--accent-primary);
-  border-radius: 50%;
-  box-shadow: 0 0 8px var(--accent-primary);
-  animation: pulse-glow 2s infinite;
-}
-
-.status-text {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--accent-primary);
-  letter-spacing: 0.5px;
-}
-
-.live-clock {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--text-muted);
-  text-align: center;
-}
-
-/* ==========================================================================
-   MAIN CONTENT AREA
-   ========================================================================== */
-
-.main-content {
-  margin-left: var(--sidebar-width);
-  flex: 1;
-  padding: 32px 40px 60px 40px;
-  max-width: 1200px;
-}
-
-/* Top Header */
-.top-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 28px;
-}
-
-.page-title {
-  font-family: var(--font-mono);
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--text-main);
-  letter-spacing: -0.5px;
-}
-
-.text-accent {
-  color: var(--accent-primary);
-}
-
-.page-subtitle {
-  color: var(--text-secondary);
-  font-size: 13px;
-  margin-top: 4px;
-}
-
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-
-.user-profile-pill {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background-color: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
-  padding: 5px 10px;
-}
-
-.user-avatar {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background-color: rgba(0, 229, 160, 0.15);
-  color: var(--accent-primary);
-  font-family: var(--font-mono);
-  font-weight: 700;
-  font-size: 11px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid rgba(0, 229, 160, 0.3);
-}
-
-.user-details {
-  display: flex;
-  flex-direction: column;
-}
-
-.user-name {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--text-main);
-  line-height: 1.2;
-}
-
-.user-role {
-  font-size: 10px;
-  color: var(--text-secondary);
-  line-height: 1.2;
-}
-
-.btn-logout {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-muted);
-  text-decoration: none;
-  padding: 4px;
-  border-radius: 4px;
-  transition: all var(--transition-fast);
-}
-
-.btn-logout:hover {
-  color: var(--color-blockers);
-  background-color: rgba(255, 92, 92, 0.1);
-}
-
-.btn-logout svg {
-  width: 14px;
-  height: 14px;
-}
-
-.status-pill {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 14px;
-  border-radius: 20px;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-}
-
-.status-pill.ready {
-  background-color: rgba(0, 229, 160, 0.1);
-  border: 1px solid var(--accent-primary);
-  color: var(--accent-primary);
-}
-
-.pulse-indicator {
-  width: 6px;
-  height: 6px;
-  background-color: var(--accent-primary);
-  border-radius: 50%;
-  animation: pulse-glow 2s infinite;
-}
-
-/* Section Containers */
-.section-container {
-  margin-bottom: 28px;
-}
-
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 14px;
-}
-
-.section-heading {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-secondary);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.heading-icon {
-  width: 16px;
-  height: 16px;
-  color: var(--accent-primary);
-}
-
-/* Cards */
-.card {
-  background-color: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  padding: 20px;
-  transition: border-color var(--transition-fast);
-}
-
-.card:hover {
-  border-color: var(--border-hover);
-}
-
-/* ==========================================================================
-   DATA SOURCES STATUS GRID
-   ========================================================================== */
-
-.sources-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 16px;
-}
-
-.source-card {
-  background-color: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  padding: 16px;
-  transition: all var(--transition-fast);
-}
-
-.source-card:hover {
-  background-color: var(--bg-card-hover);
-  border-color: var(--border-hover);
-}
-
-.source-card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-}
-
-.source-name-wrap {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.source-icon {
-  width: 18px;
-  height: 18px;
-  color: var(--accent-primary);
-}
-
-.source-title {
-  font-weight: 600;
-  font-size: 13px;
-  color: var(--text-main);
-}
-
-.source-status-badge {
-  font-family: var(--font-mono);
-  font-size: 10.5px;
-  font-weight: 600;
-  padding: 3px 8px;
-  border-radius: 4px;
-}
-
-.source-status-badge.connected {
-  background-color: rgba(0, 229, 160, 0.12);
-  color: var(--accent-primary);
-  border: 1px solid rgba(0, 229, 160, 0.3);
-}
-
-.source-status-badge.unavailable {
-  background-color: rgba(255, 92, 92, 0.12);
-  color: var(--color-blockers);
-  border: 1px solid rgba(255, 92, 92, 0.3);
-}
-
-.source-meta {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  font-size: 12px;
-  color: var(--text-secondary);
-}
-
-.meta-item {
-  display: flex;
-  justify-content: space-between;
-}
-
-.meta-value.code {
-  font-family: var(--font-mono);
-  color: var(--text-muted);
-  font-size: 11px;
-}
-
-/* ==========================================================================
-   CONFIG & SHIFT GENERATOR FORM
-   ========================================================================== */
-
-.config-card {
-  padding: 24px;
-}
-
-.config-header {
-  margin-bottom: 16px;
-}
-
-.config-title {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--text-main);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.config-helper {
-  font-size: 12px;
-  color: var(--text-muted);
-  display: block;
-  margin-top: 4px;
-}
-
-/* Presets */
-.presets-row {
-  margin-bottom: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.presets-label {
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: var(--text-secondary);
-}
-
-.presets-pills {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.preset-pill {
-  background-color: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  color: var(--text-secondary);
-  font-size: 12px;
-  font-family: var(--font-sans);
-  font-weight: 500;
-  padding: 6px 12px;
-  border-radius: 20px;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.preset-pill:hover {
-  background-color: var(--bg-card-hover);
-  color: var(--text-main);
-  border-color: var(--border-hover);
-}
-
-.preset-pill.active {
-  background-color: rgba(0, 229, 160, 0.1);
-  color: var(--accent-primary);
-  border-color: var(--accent-primary);
-  font-weight: 600;
-}
-
-/* Inputs */
-.inputs-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr 180px;
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
-.input-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.input-label {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-secondary);
-}
-
-.text-input, .select-input {
-  background-color: var(--bg-input);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
-  color: var(--text-main);
-  font-family: var(--font-mono);
-  font-size: 13px;
-  padding: 10px 12px;
-  outline: none;
-  transition: border-color var(--transition-fast);
-}
-
-.text-input:focus, .select-input:focus {
-  border-color: var(--accent-primary);
-  box-shadow: 0 0 0 1px var(--accent-primary);
-}
-
-.form-actions {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-}
-
-/* Buttons */
-.btn-primary {
-  background-color: var(--accent-primary);
-  color: #04140D;
-  border: none;
-  border-radius: var(--radius-sm);
-  font-family: var(--font-sans);
-  font-weight: 700;
-  font-size: 13px;
-  letter-spacing: 0.5px;
-  padding: 12px 24px;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  text-decoration: none;
-}
-
-.btn-primary:hover {
-  background-color: var(--accent-bright);
-  box-shadow: 0 0 16px var(--accent-glow);
-  transform: translateY(-1px);
-}
-
-.btn-primary svg {
-  width: 16px;
-  height: 16px;
-  fill: currentColor;
-}
-
-.btn-secondary {
-  background-color: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  color: var(--text-main);
-  border-radius: var(--radius-sm);
-  font-family: var(--font-sans);
-  font-weight: 600;
-  font-size: 13px;
-  padding: 11px 18px;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  text-decoration: none;
-}
-
-.btn-secondary:hover {
-  background-color: var(--bg-card-hover);
-  border-color: var(--border-hover);
-}
-
-.btn-secondary svg {
-  width: 15px;
-  height: 15px;
-}
-
-.btn-sm {
-  padding: 6px 12px;
-  font-size: 11px;
-}
-
-/* ==========================================================================
-   PIPELINE PROGRESS BAR
-   ========================================================================== */
-
-.progress-card {
-  border-color: var(--border-accent);
-  background-color: rgba(0, 229, 160, 0.03);
-  padding: 24px;
-}
-
-.progress-title-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 20px;
-}
-
-.progress-spinner {
-  width: 18px;
-  height: 18px;
-  border: 2px solid rgba(0, 229, 160, 0.2);
-  border-top-color: var(--accent-primary);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-.progress-title {
-  font-family: var(--font-mono);
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--accent-primary);
-}
-
-.pipeline-steps-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.pipe-step {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  opacity: 0.4;
-  transition: opacity var(--transition-fast);
-}
-
-.pipe-step.active {
-  opacity: 1;
-}
-
-.pipe-step.completed {
-  opacity: 1;
-}
-
-.step-num {
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  background-color: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--text-secondary);
-}
-
-.pipe-step.active .step-num {
-  background-color: var(--accent-primary);
-  color: #04140D;
-  border-color: var(--accent-primary);
-  box-shadow: 0 0 10px var(--accent-primary);
-}
-
-.pipe-step.completed .step-num {
-  background-color: rgba(0, 229, 160, 0.2);
-  color: var(--accent-primary);
-  border-color: var(--accent-primary);
-}
-
-.step-label {
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--text-secondary);
-}
-
-.pipe-step.active .step-label {
-  color: var(--text-main);
-  font-weight: 600;
-}
-
-.pipe-connector {
-  flex: 1;
-  height: 1px;
-  background-color: var(--border-color);
-  margin: 0 8px;
-  margin-bottom: 18px;
-}
-
-/* ==========================================================================
-   RESULTS & METRICS
-   ========================================================================== */
-
-.results-top-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.results-main-title {
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--text-main);
-}
-
-.results-subtitle {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  color: var(--text-secondary);
-  margin-top: 2px;
-}
-
-.export-btn-group {
-  display: flex;
-  gap: 10px;
-}
-
-/* Metrics Grid */
-.metrics-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-  margin-bottom: 24px;
-}
-
-.metric-card {
-  background-color: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
-  padding: 14px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.metric-label {
-  font-size: 10.5px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-}
-
-.metric-val {
-  font-family: var(--font-mono);
-  font-size: 24px;
-  font-weight: 700;
-}
-
-.completed-metric {
-  border-left: 3px solid var(--color-completed);
-}
-.completed-metric .metric-label, .completed-metric .metric-val {
-  color: var(--color-completed);
-}
-
-.in-progress-metric {
-  border-left: 3px solid var(--color-in-progress);
-}
-.in-progress-metric .metric-label, .in-progress-metric .metric-val {
-  color: var(--color-in-progress);
-}
-
-.blockers-metric {
-  border-left: 3px solid var(--color-blockers);
-}
-.blockers-metric .metric-label, .blockers-metric .metric-val {
-  color: var(--color-blockers);
-}
-
-.watch-metric {
-  border-left: 3px solid var(--color-watch);
-}
-.watch-metric .metric-label, .watch-metric .metric-val {
-  color: var(--color-watch);
-}
-
-/* ==========================================================================
-   4 HANDOVER SECTIONS & ITEM CARDS
-   ========================================================================== */
-
-.sections-accordion {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-}
-
-.handover-section-card {
-  background-color: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  overflow: hidden;
-}
-
-.handover-sec-header {
-  padding: 12px 18px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.completed-header {
-  background-color: rgba(0, 214, 143, 0.08);
-}
-.in-progress-header {
-  background-color: rgba(56, 189, 248, 0.08);
-}
-.blockers-header {
-  background-color: rgba(255, 92, 92, 0.08);
-}
-.watch-header {
-  background-color: rgba(255, 200, 87, 0.08);
-}
-
-.sec-title-wrap {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.sec-icon {
-  font-size: 15px;
-  font-weight: 700;
-}
-
-.completed-header .sec-icon, .completed-header .sec-title {
-  color: var(--color-completed);
-}
-.in-progress-header .sec-icon, .in-progress-header .sec-title {
-  color: var(--color-in-progress);
-}
-.blockers-header .sec-icon, .blockers-header .sec-title {
-  color: var(--color-blockers);
-}
-.watch-header .sec-icon, .watch-header .sec-title {
-  color: var(--color-watch);
-}
-
-.sec-title {
-  font-family: var(--font-mono);
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-}
-
-.sec-badge {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--text-secondary);
-  background-color: var(--bg-secondary);
-  padding: 2px 8px;
-  border-radius: 12px;
-  border: 1px solid var(--border-color);
-}
-
-.handover-sec-body {
-  padding: 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-/* Item Cards */
-.handover-item {
-  background-color: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
-  padding: 14px 16px;
-  transition: all var(--transition-fast);
-}
-
-.handover-item:hover {
-  background-color: var(--bg-card-hover);
-  border-color: var(--border-hover);
-}
-
-.item-top-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 6px;
-  gap: 12px;
-}
-
-.item-summary-wrap {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  flex: 1;
-}
-
-.item-record-id {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--accent-primary);
-  background-color: rgba(0, 229, 160, 0.08);
-  border: 1px solid rgba(0, 229, 160, 0.2);
-  padding: 2px 6px;
-  border-radius: 4px;
-  white-space: nowrap;
-}
-
-.item-summary {
-  font-weight: 600;
-  font-size: 13.5px;
-  color: var(--text-main);
-}
-
-.item-trace-meta {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--text-muted);
-  white-space: nowrap;
-  display: flex;
-  gap: 8px;
-}
-
-.item-trace-meta span {
-  color: var(--text-secondary);
-}
-
-.item-badges-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-
-.badge-pill {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 600;
-  padding: 2px 6px;
-  border-radius: 3px;
-  text-transform: uppercase;
-}
-
-.badge-status {
-  background-color: rgba(255, 255, 255, 0.06);
-  color: var(--text-main);
-  border: 1px solid var(--border-color);
-}
-
-.badge-priority {
-  background-color: rgba(255, 92, 92, 0.1);
-  color: var(--color-blockers);
-  border: 1px solid rgba(255, 92, 92, 0.25);
-}
-
-.badge-assignee {
-  background-color: rgba(56, 189, 248, 0.1);
-  color: var(--color-in-progress);
-  border: 1px solid rgba(56, 189, 248, 0.25);
-}
-
-.item-details-text {
-  font-size: 12.5px;
-  color: var(--text-secondary);
-  line-height: 1.45;
-}
-
-.item-progression-box {
-  margin-top: 8px;
-  padding: 6px 10px;
-  background-color: var(--bg-primary);
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--text-secondary);
-}
-
-.progression-arrow {
-  color: var(--accent-primary);
-  margin: 0 4px;
-}
-
-/* Empty Section State */
-.empty-state-banner {
-  background-color: var(--bg-secondary);
-  border: 1px dashed var(--border-color);
-  border-radius: var(--radius-sm);
-  padding: 16px;
-  text-align: center;
-  color: var(--text-muted);
-  font-style: italic;
-  font-size: 13px;
-}
-
-/* ==========================================================================
-   MODAL & PDF PREVIEW
-   ========================================================================== */
-
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(4px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 24px;
-}
-
-.modal-card {
-  background-color: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  width: 100%;
-  max-width: 900px;
-  height: 90vh;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
-}
-
-.modal-header {
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--border-color);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.modal-title {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--text-main);
-}
-
-.modal-close-btn {
-  background: none;
-  border: none;
-  color: var(--text-muted);
-  font-size: 24px;
-  cursor: pointer;
-  line-height: 1;
-}
-
-.modal-close-btn:hover {
-  color: var(--text-main);
-}
-
-.modal-body {
-  flex: 1;
-  background-color: #1a1a1a;
-  padding: 0;
-}
-
-.pdf-viewer-frame {
-  width: 100%;
-  height: 100%;
-  border: none;
-}
-
-.modal-footer {
-  padding: 12px 20px;
-  border-top: 1px solid var(--border-color);
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-}
-
-/* Handover History Table */
-.history-table-container {
-  overflow-x: auto;
-  background-color: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  margin-top: 12px;
-}
-
-.history-table {
-  width: 100%;
-  border-collapse: collapse;
-  text-align: left;
-  font-size: 12.5px;
-}
-
-.history-table th {
-  background-color: var(--bg-secondary);
-  color: var(--text-secondary);
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  padding: 12px 14px;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.history-table td {
-  padding: 12px 14px;
-  border-bottom: 1px solid var(--border-color);
-  color: var(--text-main);
-  vertical-align: middle;
-}
-
-.history-table tr:last-child td {
-  border-bottom: none;
-}
-
-.history-table tr:hover td {
-  background-color: var(--bg-card-hover);
-}
-
-.history-empty {
-  text-align: center;
-  color: var(--text-muted);
-  font-style: italic;
-  padding: 24px !important;
-}
-
-.history-pill {
-  display: inline-block;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 700;
-  padding: 2px 6px;
-  border-radius: 4px;
-}
-
-.history-pill.completed {
-  color: var(--color-completed);
-  background-color: rgba(0, 214, 143, 0.1);
-}
-
-.history-pill.in-progress {
-  color: var(--color-in-progress);
-  background-color: rgba(56, 189, 248, 0.1);
-}
-
-.history-pill.blockers {
-  color: var(--color-blockers);
-  background-color: rgba(255, 92, 92, 0.1);
-}
-
-.history-pill.watch-list {
-  color: var(--color-watch-list);
-  background-color: rgba(255, 200, 87, 0.1);
-}
-
-.history-actions {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-}
-
-.history-btn {
-  padding: 4px 8px;
-  font-size: 11px;
-  font-weight: 700;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  text-decoration: none;
-  border: 1px solid var(--border-color);
-  background-color: var(--bg-secondary);
-  color: var(--text-main);
-  transition: all var(--transition-fast);
-}
-
-.history-btn:hover {
-  background-color: var(--bg-input);
-  border-color: var(--accent-primary);
-  color: var(--accent-primary);
-}
-
-.history-btn.primary {
-  background-color: rgba(0, 229, 160, 0.15);
-  border-color: var(--accent-primary);
-  color: var(--accent-primary);
-}
-
-.history-btn.primary:hover {
-  background-color: var(--accent-primary);
-  color: #04140D;
-}
-
-/* Helpers */
-.hidden {
-  display: none !important;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-@keyframes pulse-glow {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(0.9); }
-}
-
-/* Responsive */
-@media (max-width: 960px) {
-  .sidebar {
-    width: 200px;
-  }
-  .main-content {
-    margin-left: 200px;
-    padding: 20px;
-  }
-  .inputs-grid {
-    grid-template-columns: 1fr;
-  }
-  .metrics-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 720px) {
-  .sidebar {
-    display: none;
-  }
-  .main-content {
-    margin-left: 0;
-    padding: 16px;
-  }
-  .metrics-grid {
-    grid-template-columns: 1fr;
-  }
-  .results-top-bar {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-}
-
-  </style>
 </head>
 <body>
   <div class="app-container">
-    <!-- LEFT SIDEBAR -->
-    <aside class="sidebar">
-      <div class="brand-container">
-        <div class="brand-logo">
-          <svg class="brand-icon" width="28" height="28" style="width:28px;height:28px;max-width:28px;min-width:28px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
-          </svg>
-          <div class="brand-text">
-            <span class="brand-title">SHIFT<span class="accent-slash">//</span>HANDOVER</span>
-            <span class="brand-tag">NOC INTELLIGENCE</span>
+    
+    <!-- TOP NAVIGATION BAR (Matching Mockup) -->
+    <header class="top-navbar">
+      <a href="/" class="nav-brand">
+        <!-- Blue Gear Logo from Mockup -->
+        <svg class="brand-gear-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+        <span class="brand-title">SHIFT<span class="brand-accent">//</span>MACHINE</span>
+      </a>
+
+      <ul class="nav-links">
+        <li><a href="#generator-section" class="active">Shift Generator</a></li>
+        <li><a href="#sources-section">Data Feeds</a></li>
+        <li><a href="#results-section">Handover Report</a></li>
+        <li><a href="#history-section">History Log</a></li>
+      </ul>
+
+      <div class="nav-actions">
+        <!-- Operator Pill Button -->
+        <div id="user-profile-pill" class="btn-pill-user">
+          <span class="user-avatar-dot" id="user-avatar">AR</span>
+          <span id="user-name">Alex Rivera</span>
+          <a href="/login" class="btn-logout-link" title="Logout" id="btn-logout">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+              <polyline points="16 17 21 12 16 7"/>
+              <line x1="21" x2="9" y1="12" y2="12"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <!-- HERO SECTION (Matching Mockup with Industrial Machine Graphic) -->
+    <section class="hero-section">
+      <div class="hero-grid">
+        <div class="hero-text-col">
+          <div class="hero-badge">
+            <span class="dot"></span>
+            <span>INTELLIGENCE ENGINE • GROUNDED</span>
           </div>
-        </div>
-      </div>
-
-      <nav class="sidebar-nav">
-        <a href="#generator-section" class="nav-item active">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect width="18" height="18" x="3" y="3" rx="2"/>
-            <path d="m9 12 2 2 4-4"/>
-          </svg>
-          <span>Shift Generator</span>
-        </a>
-        <a href="#sources-section" class="nav-item">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <ellipse cx="12" cy="5" rx="9" ry="3"/>
-            <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
-            <path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3"/>
-          </svg>
-          <span>Data Sources</span>
-        </a>
-        <a href="#results-section" class="nav-item">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
-            <polyline points="14 2 14 8 20 8"/>
-            <line x1="16" x2="8" y1="13" y2="13"/>
-            <line x1="16" x2="8" y1="17" y2="17"/>
-          </svg>
-          <span>Handover Report</span>
-        </a>
-      </nav>
-
-      <div class="sidebar-footer">
-        <div class="system-status-badge">
-          <span class="status-pulse-dot"></span>
-          <span class="status-text" id="sidebar-status-text">SYSTEM READY</span>
-        </div>
-        <div class="live-clock" id="live-clock">--:--:-- UTC</div>
-      </div>
-    </aside>
-
-    <!-- MAIN CONTENT -->
-    <main class="main-content">
-      <!-- HEADER -->
-      <header class="top-header">
-        <div class="header-titles">
-          <h1 class="page-title">SHIFT<span class="text-accent">//</span>HANDOVER</h1>
-          <p class="page-subtitle">Automated Shift Handover Intelligence & Deduplication Engine</p>
-        </div>
-        <div class="header-actions">
-          <!-- Operator Profile Pill -->
-          <div class="user-profile-pill" id="user-profile-pill">
-            <div class="user-avatar" id="user-avatar">AR</div>
-            <div class="user-details">
-              <span class="user-name" id="user-name">Alex Rivera</span>
-              <span class="user-role" id="user-role">Lead On-Call SRE</span>
-            </div>
-            <a href="/login" class="btn-logout" title="Switch Operator / Logout" id="btn-logout">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-                <polyline points="16 17 21 12 16 7"/>
-                <line x1="21" x2="9" y1="12" y2="12"/>
+          <h1 class="hero-title">Industrial<br>machine</h1>
+          <p class="hero-desc">
+            Automated, evidence-grounded shift intelligence engine. Ingests operational telemetry, eliminates duplicates, and manufactures audit-ready handover reports in real-time.
+          </p>
+          <div class="hero-actions-row">
+            <a href="#generator-section" class="btn-hero-learn" id="hero-cta-btn">Learn More</a>
+            <button type="button" class="btn-hero-secondary" id="hero-run-btn">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="5 3 19 12 5 21 5 3"/>
               </svg>
-            </a>
-          </div>
-
-          <div class="status-pill ready" id="header-status-pill">
-            <span class="pulse-indicator"></span>
-            <span id="header-status-label">ONLINE & GROUNDED</span>
+              Quick Generate
+            </button>
           </div>
         </div>
-      </header>
+
+        <!-- Right Visual Graphic: Industrial Machine Illustration -->
+        <div class="hero-visual-col">
+          <div class="machine-backdrop-glow"></div>
+          <div class="machine-backdrop-circle"></div>
+
+          <div class="machine-svg-wrap">
+            <svg viewBox="0 0 540 320" fill="none" xmlns="http://www.w3.org/2000/svg" class="machine-svg">
+              <!-- Definitions for Gradients and Shadows -->
+              <defs>
+                <linearGradient id="machineBodyGrad" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#465BD8"/>
+                  <stop offset="50%" stop-color="#3446B8"/>
+                  <stop offset="100%" stop-color="#24318C"/>
+                </linearGradient>
+                <linearGradient id="envelopeGrad" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#FFC533"/>
+                  <stop offset="100%" stop-color="#E8930B"/>
+                </linearGradient>
+                <linearGradient id="conveyorGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#27348B"/>
+                  <stop offset="100%" stop-color="#141B4D"/>
+                </linearGradient>
+                <filter id="glowGold" x="-20%" y="-20%" width="140%" height="140%">
+                  <feDropShadow dx="0" dy="0" stdDeviation="4" flood-color="#FFAA2C" flood-opacity="0.6"/>
+                </filter>
+              </defs>
+
+              <!-- Base Floor Stand -->
+              <path d="M 40 270 L 480 270" stroke="#1D2A74" stroke-width="8" stroke-linecap="round"/>
+
+              <!-- Conveyor Belt Assembly -->
+              <rect x="50" y="220" width="420" height="34" rx="17" fill="url(#conveyorGrad)" stroke="#394CB8" stroke-width="2"/>
+              <line x1="70" y1="237" x2="450" y2="237" stroke="#576FD9" stroke-width="2" class="machine-conveyor-track"/>
+
+              <!-- 9 Animated Conveyor Rollers -->
+              <!-- Roller 1 -->
+              <g transform="translate(70, 237)">
+                <circle cx="0" cy="0" r="10" fill="#141B4D" stroke="#5E78ED" stroke-width="2"/>
+                <circle cx="0" cy="0" r="3" fill="#8EA3FF" class="machine-roller-wheel"/>
+                <line x1="-6" y1="0" x2="6" y2="0" stroke="#8EA3FF" stroke-width="1.5" class="machine-roller-wheel"/>
+              </g>
+              <!-- Roller 2 -->
+              <g transform="translate(115, 237)">
+                <circle cx="0" cy="0" r="10" fill="#141B4D" stroke="#5E78ED" stroke-width="2"/>
+                <circle cx="0" cy="0" r="3" fill="#8EA3FF" class="machine-roller-wheel"/>
+                <line x1="-6" y1="0" x2="6" y2="0" stroke="#8EA3FF" stroke-width="1.5" class="machine-roller-wheel"/>
+              </g>
+              <!-- Roller 3 -->
+              <g transform="translate(160, 237)">
+                <circle cx="0" cy="0" r="10" fill="#141B4D" stroke="#5E78ED" stroke-width="2"/>
+                <circle cx="0" cy="0" r="3" fill="#8EA3FF" class="machine-roller-wheel"/>
+                <line x1="-6" y1="0" x2="6" y2="0" stroke="#8EA3FF" stroke-width="1.5" class="machine-roller-wheel"/>
+              </g>
+              <!-- Roller 4 -->
+              <g transform="translate(205, 237)">
+                <circle cx="0" cy="0" r="10" fill="#141B4D" stroke="#5E78ED" stroke-width="2"/>
+                <circle cx="0" cy="0" r="3" fill="#8EA3FF" class="machine-roller-wheel"/>
+                <line x1="-6" y1="0" x2="6" y2="0" stroke="#8EA3FF" stroke-width="1.5" class="machine-roller-wheel"/>
+              </g>
+              <!-- Roller 5 -->
+              <g transform="translate(250, 237)">
+                <circle cx="0" cy="0" r="10" fill="#141B4D" stroke="#5E78ED" stroke-width="2"/>
+                <circle cx="0" cy="0" r="3" fill="#8EA3FF" class="machine-roller-wheel"/>
+                <line x1="-6" y1="0" x2="6" y2="0" stroke="#8EA3FF" stroke-width="1.5" class="machine-roller-wheel"/>
+              </g>
+              <!-- Roller 6 -->
+              <g transform="translate(295, 237)">
+                <circle cx="0" cy="0" r="10" fill="#141B4D" stroke="#5E78ED" stroke-width="2"/>
+                <circle cx="0" cy="0" r="3" fill="#8EA3FF" class="machine-roller-wheel"/>
+                <line x1="-6" y1="0" x2="6" y2="0" stroke="#8EA3FF" stroke-width="1.5" class="machine-roller-wheel"/>
+              </g>
+              <!-- Roller 7 -->
+              <g transform="translate(340, 237)">
+                <circle cx="0" cy="0" r="10" fill="#141B4D" stroke="#5E78ED" stroke-width="2"/>
+                <circle cx="0" cy="0" r="3" fill="#8EA3FF" class="machine-roller-wheel"/>
+                <line x1="-6" y1="0" x2="6" y2="0" stroke="#8EA3FF" stroke-width="1.5" class="machine-roller-wheel"/>
+              </g>
+              <!-- Roller 8 -->
+              <g transform="translate(385, 237)">
+                <circle cx="0" cy="0" r="10" fill="#141B4D" stroke="#5E78ED" stroke-width="2"/>
+                <circle cx="0" cy="0" r="3" fill="#8EA3FF" class="machine-roller-wheel"/>
+                <line x1="-6" y1="0" x2="6" y2="0" stroke="#8EA3FF" stroke-width="1.5" class="machine-roller-wheel"/>
+              </g>
+              <!-- Roller 9 -->
+              <g transform="translate(430, 237)">
+                <circle cx="0" cy="0" r="10" fill="#141B4D" stroke="#5E78ED" stroke-width="2"/>
+                <circle cx="0" cy="0" r="3" fill="#8EA3FF" class="machine-roller-wheel"/>
+                <line x1="-6" y1="0" x2="6" y2="0" stroke="#8EA3FF" stroke-width="1.5" class="machine-roller-wheel"/>
+              </g>
+
+              <!-- Golden Handover Report Envelope on the Conveyor -->
+              <g class="machine-envelope" transform="translate(130, 160)">
+                <rect x="0" y="0" width="68" height="48" rx="4" fill="url(#envelopeGrad)" filter="url(#glowGold)"/>
+                <!-- Envelope Flap -->
+                <path d="M 0 0 L 34 26 L 68 0" fill="#E28905" opacity="0.9"/>
+                <path d="M 0 48 L 28 22" stroke="#C47500" stroke-width="1.5"/>
+                <path d="M 68 48 L 40 22" stroke="#C47500" stroke-width="1.5"/>
+              </g>
+
+              <!-- Main Industrial Machine Body -->
+              <g transform="translate(250, 95)">
+                <!-- Machine Housing -->
+                <rect x="0" y="0" width="160" height="135" rx="14" fill="url(#machineBodyGrad)" stroke="#5970E8" stroke-width="3"/>
+                
+                <!-- Side Shading & Bevel -->
+                <path d="M 148 10 L 148 125 A 4 4 0 0 1 144 129 L 16 129" stroke="#1E276E" stroke-width="2" fill="none"/>
+
+                <!-- Top Yellow Warning Beacon -->
+                <rect x="120" y="-16" width="14" height="16" rx="4" fill="#FFAA2C" class="machine-beacon"/>
+                <rect x="117" y="-3" width="20" height="4" fill="#141B4D"/>
+
+                <!-- Side Controller Levers & Buttons -->
+                <!-- Red Capsule Button -->
+                <rect x="156" y="24" width="12" height="18" rx="6" fill="#FF4B6E" class="machine-led-red"/>
+                <!-- Yellow Lever with Stem -->
+                <line x1="160" y1="70" x2="180" y2="70" stroke="#313E99" stroke-width="4"/>
+                <circle cx="182" cy="70" r="8" fill="#FFAA2C"/>
+
+                <!-- Power Conduit Cable -->
+                <path d="M 160 105 C 190 105, 195 145, 175 145 C 160 145, 160 125, 145 125" fill="none" stroke="#253282" stroke-width="6" stroke-linecap="round"/>
+
+                <!-- Machine Instrument Panel (Top Row) -->
+                <!-- Big Dial Gauge -->
+                <circle cx="28" cy="30" r="14" fill="#101742" stroke="#8EA3FF" stroke-width="2"/>
+                <circle cx="28" cy="30" r="4" fill="#8EA3FF"/>
+                <line x1="28" y1="30" x2="34" y2="24" stroke="#5CFFC1" stroke-width="2" stroke-linecap="round"/>
+
+                <!-- 3 Indicator LEDs -->
+                <circle cx="56" cy="30" r="4.5" fill="#38BDF8"/>
+                <circle cx="70" cy="30" r="4.5" fill="#5CFFC1" class="machine-led-green"/>
+                <circle cx="84" cy="30" r="4.5" fill="#FFAA2C"/>
+
+                <!-- 3 Vertical Bar Indicators -->
+                <line x1="98" y1="22" x2="98" y2="38" stroke="#101742" stroke-width="3" stroke-linecap="round"/>
+                <line x1="104" y1="22" x2="104" y2="38" stroke="#101742" stroke-width="3" stroke-linecap="round"/>
+                <line x1="110" y1="22" x2="110" y2="38" stroke="#101742" stroke-width="3" stroke-linecap="round"/>
+
+                <!-- Dark Telemetry Inspection Chamber / Screen -->
+                <rect x="16" y="60" width="128" height="58" rx="8" fill="#0C1236" stroke="#2E3D94" stroke-width="2"/>
+                <!-- Glowing Chamber Screen Glow -->
+                <rect x="22" y="66" width="116" height="46" rx="4" fill="#172260" opacity="0.6"/>
+                
+                <!-- Internal Process Status Text inside Machine Screen -->
+                <text x="80" y="93" fill="#6988FF" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="700" text-anchor="middle" letter-spacing="1">
+                  ● PIPELINE ACTIVE
+                </text>
+              </g>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MAIN DASHBOARD -->
+    <main class="main-content">
 
       <!-- DATA SOURCES STATUS BAR -->
       <section id="sources-section" class="section-container">
@@ -1434,7 +234,7 @@ svg {
               <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
               <path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3"/>
             </svg>
-            Live Data Source Connections
+            Operational Data Feeds & Storage
           </h2>
           <button class="btn-secondary btn-sm" id="btn-refresh-sources">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1458,9 +258,9 @@ svg {
                   <path d="M13 17v2"/>
                   <path d="M13 11v2"/>
                 </svg>
-                <span class="source-title">Ticketing Feed (Jira/ServiceNow)</span>
+                <span class="source-title">Ticketing Feed (Sample Operational Data)</span>
               </div>
-              <span class="source-status-badge connected" id="ticket-badge">● Connected</span>
+              <span class="source-status-badge connected" id="ticket-badge">● Demo Source • Ready</span>
             </div>
             <div class="source-meta">
               <div class="meta-item">
@@ -1483,9 +283,9 @@ svg {
                   <line x1="12" y1="9" x2="12" y2="13"/>
                   <line x1="12" y1="17" x2="12.01" y2="17"/>
                 </svg>
-                <span class="source-title">Incident Stream (PagerDuty/Alerts)</span>
+                <span class="source-title">Incident Stream (Sample Operational Data)</span>
               </div>
-              <span class="source-status-badge connected" id="incident-badge">● Connected</span>
+              <span class="source-status-badge connected" id="incident-badge">● Demo Source • Ready</span>
             </div>
             <div class="source-meta">
               <div class="meta-item">
@@ -1499,7 +299,7 @@ svg {
             </div>
           </div>
 
-          <!-- Card 3: Enterprise Database (PostgreSQL / Supabase) -->
+          <!-- Card 3: Database -->
           <div class="source-card db-card" id="card-source-db">
             <div class="source-card-header">
               <div class="source-name-wrap">
@@ -1508,14 +308,14 @@ svg {
                   <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
                   <path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3"/>
                 </svg>
-                <span class="source-title">Database (PostgreSQL / Supabase)</span>
+                <span class="source-title">Database (SQLite / PostgreSQL)</span>
               </div>
-              <span class="source-status-badge connected" id="db-badge">● Connected</span>
+              <span class="source-status-badge connected" id="db-badge">● Connected • Operational</span>
             </div>
             <div class="source-meta">
               <div class="meta-item">
                 <span class="meta-label">Engine / Target:</span>
-                <span class="meta-value code" id="db-file">PostgreSQL @ Supabase</span>
+                <span class="meta-value code" id="db-file">shift_handover.db</span>
               </div>
               <div class="meta-item">
                 <span class="meta-label">Tickets / Incidents:</span>
@@ -1546,10 +346,10 @@ svg {
 
           <!-- Quick Shift Presets -->
           <div class="presets-row">
-            <span class="presets-label">Quick Presets:</span>
+            <span class="presets-label">Presets:</span>
             <div class="presets-pills">
               <button type="button" class="preset-pill active" data-start="2026-09-03T17:00" data-end="2026-09-03T20:00" data-tz="+05:30">
-                Primary Demo Shift (17:00 – 20:00 IST)
+                Primary Demo (17:00 – 20:00 IST)
               </button>
               <button type="button" class="preset-pill" data-start="2026-09-03T20:00" data-end="2026-09-04T04:00" data-tz="+05:30">
                 Night Shift (20:00 – 04:00 IST)
@@ -1564,7 +364,7 @@ svg {
                 Quiet Shift (16:00 – 18:00 IST)
               </button>
               <button type="button" class="preset-pill" data-start="2026-09-05T00:00" data-end="2026-09-05T04:00" data-tz="+05:30">
-                Empty Window (Nothing to report)
+                Empty Window (No activity in shift)
               </button>
             </div>
           </div>
@@ -1601,7 +401,7 @@ svg {
               </button>
 
               <button type="button" class="btn-secondary" id="btn-dummy-test">
-                <span>Run Dummy Pipeline Test</span>
+                <span>Run Pipeline Test</span>
               </button>
             </div>
           </form>
@@ -1669,6 +469,29 @@ svg {
               </svg>
               Download PDF Report
             </a>
+          </div>
+        </div>
+
+        <!-- Operational Audit & Shift Filter Statistics Bar -->
+        <div class="audit-stats-bar" id="audit-stats-bar">
+          <div class="audit-stat-col">
+            <span class="audit-stat-val" id="stat-total-records">0</span>
+            <span class="audit-stat-lbl">Total Source Records</span>
+          </div>
+          <div class="audit-stat-divider"></div>
+          <div class="audit-stat-col">
+            <span class="audit-stat-val text-mint" id="stat-included-records">0</span>
+            <span class="audit-stat-lbl">Inside Shift [Start, End)</span>
+          </div>
+          <div class="audit-stat-divider"></div>
+          <div class="audit-stat-col">
+            <span class="audit-stat-val text-muted" id="stat-excluded-records">0</span>
+            <span class="audit-stat-lbl">Records Excluded</span>
+          </div>
+          <div class="audit-stat-divider"></div>
+          <div class="audit-stat-col">
+            <span class="audit-stat-val text-sky" id="stat-unique-items">0</span>
+            <span class="audit-stat-lbl">Unique Collapsed Items</span>
           </div>
         </div>
 
@@ -1762,7 +585,7 @@ svg {
               <circle cx="12" cy="12" r="10"/>
               <polyline points="12 6 12 12 16 14"/>
             </svg>
-            HANDOVER HISTORY
+            HANDOVER HISTORY LOG
           </h2>
           <button class="btn-secondary btn-sm" id="btn-refresh-history">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1816,563 +639,28 @@ svg {
         </div>
       </div>
 
+      <!-- EVIDENCE GROUNDING AUDIT MODAL -->
+      <div class="modal-overlay hidden" id="evidence-modal">
+        <div class="evidence-modal-card">
+          <div class="modal-header">
+            <div>
+              <h3 class="modal-title" id="evidence-title">Evidence Trace</h3>
+              <span class="modal-subtitle" id="evidence-subtitle" style="font-size:12px; color:var(--text-secondary); font-family:var(--font-mono);"></span>
+            </div>
+            <button class="modal-close-btn" id="evidence-modal-close">&times;</button>
+          </div>
+          <div class="evidence-modal-body" id="evidence-modal-body">
+            <!-- Dynamically populated -->
+          </div>
+          <div class="modal-footer">
+            <button class="btn-secondary" id="evidence-modal-dismiss">Close Audit Trace</button>
+          </div>
+        </div>
+      </div>
+
     </main>
   </div>
 
-  <script>
-/**
- * app.js - Client-Side Controller for SHIFT//HANDOVER Web Dashboard
- */
-
-document.addEventListener("DOMContentLoaded", () => {
-  // Elements
-  const liveClockEl = document.getElementById("live-clock");
-  const shiftForm = document.getElementById("shift-form");
-  const shiftStartInput = document.getElementById("shift-start");
-  const shiftEndInput = document.getElementById("shift-end");
-  const shiftTzSelect = document.getElementById("shift-tz");
-  const presetPills = document.querySelectorAll(".preset-pill");
-  const btnGenerate = document.getElementById("btn-generate");
-  const btnDummyTest = document.getElementById("btn-dummy-test");
-  const btnRefreshSources = document.getElementById("btn-refresh-sources");
-
-  // Progress UI
-  const progressSection = document.getElementById("progress-section");
-  const progressMsg = document.getElementById("progress-status-msg");
-  const stepFetch = document.getElementById("step-fetch");
-  const stepFilter = document.getElementById("step-filter");
-  const stepDedup = document.getElementById("step-dedup");
-  const stepClassify = document.getElementById("step-classify");
-  const stepPublish = document.getElementById("step-publish");
-
-  // Results UI
-  const resultsSection = document.getElementById("results-section");
-  const resultsWindowLabel = document.getElementById("results-window-label");
-  const btnViewPdf = document.getElementById("btn-view-pdf");
-  const btnDownloadPdf = document.getElementById("btn-download-pdf");
-
-  // Metric Counters
-  const cntCompleted = document.getElementById("cnt-completed");
-  const cntInProgress = document.getElementById("cnt-in-progress");
-  const cntBlockers = document.getElementById("cnt-blockers");
-  const cntWatch = document.getElementById("cnt-watch");
-
-  // Section Badges & Lists
-  const badgeCompleted = document.getElementById("badge-completed");
-  const badgeInProgress = document.getElementById("badge-in-progress");
-  const badgeBlockers = document.getElementById("badge-blockers");
-  const badgeWatch = document.getElementById("badge-watch");
-
-  const listCompleted = document.getElementById("list-completed");
-  const listInProgress = document.getElementById("list-in-progress");
-  const listBlockers = document.getElementById("list-blockers");
-  const listWatch = document.getElementById("list-watch");
-
-  // Modal UI
-  const pdfModal = document.getElementById("pdf-modal");
-  const modalClose = document.getElementById("modal-close");
-  const modalDismissBtn = document.getElementById("modal-dismiss-btn");
-  const modalDownloadLink = document.getElementById("modal-download-link");
-  const pdfFrame = document.getElementById("pdf-frame");
-
-  // Authentication Helpers
-  function getAuthHeaders(headers = {}) {
-    const token = localStorage.getItem("shift_token");
-    const out = { ...headers };
-    if (token) {
-      out["Authorization"] = `Bearer ${token}`;
-    }
-    return out;
-  }
-
-  async function authFetch(url, options = {}) {
-    const opts = { ...options };
-    opts.headers = getAuthHeaders(opts.headers || {});
-    const res = await fetch(url, opts);
-    if (res.status === 401) {
-      localStorage.removeItem("shift_user");
-      localStorage.removeItem("shift_token");
-      window.location.href = "/login";
-    }
-    return res;
-  }
-
-  // User Profile
-  async function loadUserProfile() {
-    try {
-      const res = await fetch("/api/me", { headers: getAuthHeaders() });
-      if (res.ok) {
-        const data = await res.json();
-        if (data.authenticated && data.user) {
-          localStorage.setItem("shift_user", JSON.stringify(data.user));
-          const user = data.user;
-          const nameEl = document.getElementById("user-name");
-          const roleEl = document.getElementById("user-role");
-          const avatarEl = document.getElementById("user-avatar");
-          if (nameEl) nameEl.textContent = user.name;
-          if (roleEl) roleEl.textContent = user.role;
-          if (avatarEl) avatarEl.textContent = user.avatar || user.name.substring(0, 2).toUpperCase();
-          return;
-        }
-      }
-    } catch (e) {
-      console.warn("Failed to load user profile from server:", e);
-    }
-
-    try {
-      const stored = localStorage.getItem("shift_user");
-      let user = stored ? JSON.parse(stored) : null;
-      if (!user) {
-        user = {
-          name: "Alex Rivera",
-          role: "Lead On-Call SRE",
-          avatar: "AR"
-        };
-      }
-      const nameEl = document.getElementById("user-name");
-      const roleEl = document.getElementById("user-role");
-      const avatarEl = document.getElementById("user-avatar");
-      if (nameEl) nameEl.textContent = user.name;
-      if (roleEl) roleEl.textContent = user.role;
-      if (avatarEl) avatarEl.textContent = user.avatar || user.name.substring(0, 2).toUpperCase();
-    } catch (e) {
-      console.warn("Failed to load fallback user profile:", e);
-    }
-  }
-  loadUserProfile();
-
-  const btnLogout = document.getElementById("btn-logout");
-  if (btnLogout) {
-    btnLogout.addEventListener("click", async (e) => {
-      e.preventDefault();
-      try {
-        await fetch("/api/logout", { method: "POST", headers: getAuthHeaders() });
-      } catch (err) {}
-      localStorage.removeItem("shift_user");
-      localStorage.removeItem("shift_token");
-      window.location.href = "/login";
-    });
-  }
-
-  // Live UTC Clock
-  function updateLiveClock() {
-    const now = new Date();
-    const utcStr = now.toISOString().substring(11, 19) + " UTC";
-    if (liveClockEl) liveClockEl.textContent = utcStr;
-  }
-  setInterval(updateLiveClock, 1000);
-  updateLiveClock();
-
-  // Load Data Source Health & Database Stats
-  async function loadSourceHealth() {
-    try {
-      const res = await fetch("/api/status");
-      const data = await res.json();
-
-      const ticketSource = data.sources?.find(s => s.name === "Ticketing");
-      const incidentSource = data.sources?.find(s => s.name === "Incident Management");
-      const dbStats = data.database;
-
-      const ticketCountEl = document.getElementById("ticket-count");
-      const ticketBadgeEl = document.getElementById("ticket-badge");
-      const incidentCountEl = document.getElementById("incident-count");
-      const incidentBadgeEl = document.getElementById("incident-badge");
-
-      const dbFileEl = document.getElementById("db-file");
-      const dbCountsEl = document.getElementById("db-counts");
-      const dbReportsCountEl = document.getElementById("db-reports-count");
-      const dbBadgeEl = document.getElementById("db-badge");
-
-      if (ticketSource && ticketCountEl) {
-        ticketCountEl.textContent = `${ticketSource.total_records} records`;
-        if (ticketSource.connected) {
-          ticketBadgeEl.textContent = "● Connected";
-          ticketBadgeEl.className = "source-status-badge connected";
-        } else {
-          ticketBadgeEl.textContent = "● Unavailable";
-          ticketBadgeEl.className = "source-status-badge unavailable";
-        }
-      }
-
-      if (incidentSource && incidentCountEl) {
-        incidentCountEl.textContent = `${incidentSource.total_records} records`;
-        if (incidentSource.connected) {
-          incidentBadgeEl.textContent = "● Connected";
-          incidentBadgeEl.className = "source-status-badge connected";
-        } else {
-          incidentBadgeEl.textContent = "● Unavailable";
-          incidentBadgeEl.className = "source-status-badge unavailable";
-        }
-      }
-
-      if (dbStats && dbFileEl) {
-        dbFileEl.textContent = dbStats.database_file || "shift_handover.db";
-        dbCountsEl.textContent = `${dbStats.tickets_count} tickets / ${dbStats.incidents_count} incidents`;
-        dbReportsCountEl.textContent = `${dbStats.reports_count} generated reports`;
-        if (dbStats.connected) {
-          dbBadgeEl.textContent = "● Connected";
-          dbBadgeEl.className = "source-status-badge connected";
-        } else {
-          dbBadgeEl.textContent = "● Disconnected";
-          dbBadgeEl.className = "source-status-badge unavailable";
-        }
-      }
-    } catch (err) {
-      console.warn("Failed to fetch data sources status:", err);
-    }
-  }
-  loadSourceHealth();
-  if (btnRefreshSources) btnRefreshSources.addEventListener("click", loadSourceHealth);
-
-  // Quick Preset Click Handler
-  presetPills.forEach(pill => {
-    pill.addEventListener("click", () => {
-      presetPills.forEach(p => p.classList.remove("active"));
-      pill.classList.add("active");
-
-      const start = pill.getAttribute("data-start");
-      const end = pill.getAttribute("data-end");
-      const tz = pill.getAttribute("data-tz");
-
-      if (start) shiftStartInput.value = start;
-      if (end) shiftEndInput.value = end;
-      if (tz) shiftTzSelect.value = tz;
-    });
-  });
-
-  // Animated Pipeline Steps Runner
-  async function animatePipelineSteps() {
-    const steps = [
-      { el: stepFetch, msg: "Step 1/5: Ingesting activity from Ticketing & Incident data feeds..." },
-      { el: stepFilter, msg: "Step 2/5: Normalizing UTC timestamps & filtering shift window [start, end)..." },
-      { el: stepDedup, msg: "Step 3/5: Grouping by (source, record_id) & collapsing progression updates..." },
-      { el: stepClassify, msg: "Step 4/5: Applying deterministic rule-based classification into 4 sections..." },
-      { el: stepPublish, msg: "Step 5/5: Compiling executive-ready single PDF report via ReportLab..." }
-    ];
-
-    for (let i = 0; i < steps.length; i++) {
-      steps.forEach((s, idx) => {
-        if (idx < i) {
-          s.el.className = "pipe-step completed";
-        } else if (idx === i) {
-          s.el.className = "pipe-step active";
-        } else {
-          s.el.className = "pipe-step";
-        }
-      });
-      progressMsg.textContent = steps[i].msg;
-      await new Promise(r => setTimeout(r, 120));
-    }
-  }
-
-  // Trigger Generation
-  async function triggerGeneration(dummyMode = false) {
-    const startVal = shiftStartInput.value;
-    const endVal = shiftEndInput.value;
-    const tzVal = shiftTzSelect.value;
-
-    if (!startVal || !endVal) {
-      alert("Please specify both Shift Start and Shift End timestamps.");
-      return;
-    }
-
-    const isoStart = `${startVal}:00${tzVal}`;
-    const isoEnd = `${endVal}:00${tzVal}`;
-
-    // UI state
-    btnGenerate.disabled = true;
-    btnGenerate.style.opacity = "0.7";
-    progressSection.classList.remove("hidden");
-    resultsSection.classList.add("hidden");
-
-    await animatePipelineSteps();
-
-    try {
-      const response = await authFetch("/api/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          shift_start: isoStart,
-          shift_end: isoEnd,
-          dummy: dummyMode
-        })
-      });
-
-      const data = await response.json();
-
-      if (!response.ok || !data.success) {
-        throw new Error(data.error || "Failed to generate handover note.");
-      }
-
-      // Mark all steps completed
-      [stepFetch, stepFilter, stepDedup, stepClassify, stepPublish].forEach(el => {
-        el.className = "pipe-step completed";
-      });
-      progressMsg.textContent = "Handover Generation Complete!";
-
-      // Render Results
-      renderResults(data);
-
-      setTimeout(() => {
-        progressSection.classList.add("hidden");
-        resultsSection.classList.remove("hidden");
-        resultsSection.scrollIntoView({ behavior: "smooth", block: "start" });
-      }, 250);
-
-    } catch (err) {
-      alert(`Error generating handover note:\n${err.message}`);
-      progressSection.classList.add("hidden");
-    } finally {
-      btnGenerate.disabled = false;
-      btnGenerate.style.opacity = "1";
-    }
-  }
-
-  // Render Section Items
-  function renderSectionList(container, items, sectionName) {
-    container.innerHTML = "";
-
-    if (!items || items.length === 0) {
-      container.innerHTML = `<div class="empty-state-banner">Nothing to report.</div>`;
-      return;
-    }
-
-    items.forEach(item => {
-      const card = document.createElement("div");
-      card.className = "handover-item";
-
-      const recId = item.record_id || "N/A";
-      const source = item.source || "Unknown System";
-      const summary = item.summary || item.title || "Untitled Activity";
-      const timestamp = item.timestamp || item.timestamp_display || "N/A";
-      const status = (item.status || "N/A").replace(/_/g, " ").toUpperCase();
-      const priority = item.priority || item.severity || "";
-      const assignee = item.assignee || item.service || "";
-      const details = item.details || item.notes || "";
-      const progression = item.progression || [];
-
-      let badgesHtml = `<span class="badge-pill badge-status">${escapeHtml(status)}</span>`;
-      if (priority) {
-        badgesHtml += `<span class="badge-pill badge-priority">${escapeHtml(priority)}</span>`;
-      }
-      if (assignee) {
-        badgesHtml += `<span class="badge-pill badge-assignee">${escapeHtml(assignee)}</span>`;
-      }
-
-      let progressionHtml = "";
-      if (progression && progression.length > 1) {
-        progressionHtml = `
-          <div class="item-progression-box">
-            <span style="color: var(--text-muted);">Progression:</span> 
-            ${progression.map(p => escapeHtml(p)).join('<span class="progression-arrow">→</span>')}
-          </div>
-        `;
-      }
-
-      let detailsHtml = "";
-      if (details && details !== summary) {
-        detailsHtml = `<p class="item-details-text">${escapeHtml(details)}</p>`;
-      }
-
-      card.innerHTML = `
-        <div class="item-top-row">
-          <div class="item-summary-wrap">
-            <span class="item-record-id">[${escapeHtml(recId)}]</span>
-            <span class="item-summary">${escapeHtml(summary)}</span>
-          </div>
-          <div class="item-trace-meta">
-            <span>${escapeHtml(source)}</span> | ${escapeHtml(timestamp)}
-          </div>
-        </div>
-
-        <div class="item-badges-row">
-          ${badgesHtml}
-        </div>
-
-        ${detailsHtml}
-        ${progressionHtml}
-      `;
-
-      container.appendChild(card);
-    });
-  }
-
-  // Render Full Handover Results
-  function renderResults(data) {
-    const shift = data.shift_window || {};
-    resultsWindowLabel.textContent = `Shift: ${shift.start} → ${shift.end} (${shift.start_utc || ''})`;
-
-    const metrics = data.metrics || {};
-    cntCompleted.textContent = metrics.completed || 0;
-    cntInProgress.textContent = metrics.in_progress || 0;
-    cntBlockers.textContent = metrics.blockers || 0;
-    cntWatch.textContent = metrics.watch_list || 0;
-
-    const sections = data.sections || {};
-    const compList = sections.completed || [];
-    const inProgList = sections.in_progress || [];
-    const blockList = sections.blockers || [];
-    const watchList = sections.watch_list || [];
-
-    badgeCompleted.textContent = `${compList.length} item(s)`;
-    badgeInProgress.textContent = `${inProgList.length} item(s)`;
-    badgeBlockers.textContent = `${blockList.length} item(s)`;
-    badgeWatch.textContent = `${watchList.length} item(s)`;
-
-    renderSectionList(listCompleted, compList, "COMPLETED");
-    renderSectionList(listInProgress, inProgList, "IN PROGRESS");
-    renderSectionList(listBlockers, blockList, "BLOCKERS / ESCALATIONS");
-    renderSectionList(listWatch, watchList, "WATCH-LIST");
-
-    // PDF Links
-    if (data.pdf_url) {
-      btnDownloadPdf.href = `${data.pdf_url}?download=1`;
-      modalDownloadLink.href = `${data.pdf_url}?download=1`;
-      pdfFrame.src = data.pdf_url;
-    }
-  }
-
-  // Load Handover History from SQLite
-  async function loadHandoverHistory() {
-    const tableBody = document.getElementById("history-table-body");
-    if (!tableBody) return;
-
-    try {
-      const res = await authFetch("/api/reports");
-      const data = await res.json();
-      const reports = data.reports || [];
-
-      if (!reports.length) {
-        tableBody.innerHTML = `<tr><td colspan="9" class="history-empty">No previous handover reports stored yet.</td></tr>`;
-        return;
-      }
-
-      tableBody.innerHTML = "";
-      reports.forEach(rep => {
-        const tr = document.createElement("tr");
-        const pdfUrl = `/api/download/${encodeURIComponent(rep.pdf_filename)}`;
-
-        tr.innerHTML = `
-          <td><strong>#${rep.id}</strong></td>
-          <td class="code" style="font-size:11.5px;">${escapeHtml(rep.shift_start)} <br/><span style="color:var(--text-muted);">to</span> ${escapeHtml(rep.shift_end)}</td>
-          <td><strong>${rep.total_items}</strong></td>
-          <td><span class="history-pill completed">${rep.completed_count}</span></td>
-          <td><span class="history-pill in-progress">${rep.in_progress_count}</span></td>
-          <td><span class="history-pill blockers">${rep.blockers_count}</span></td>
-          <td><span class="history-pill watch-list">${rep.watchlist_count}</span></td>
-          <td style="font-size:11px; color:var(--text-secondary);">${escapeHtml(rep.generated_at)}</td>
-          <td>
-            <div class="history-actions">
-              <button class="history-btn primary btn-view-report" data-id="${rep.id}">VIEW</button>
-              <a href="${pdfUrl}?download=1" class="history-btn" target="_blank" download>PDF</a>
-            </div>
-          </td>
-        `;
-        tableBody.appendChild(tr);
-      });
-
-      // Attach View Handlers
-      tableBody.querySelectorAll(".btn-view-report").forEach(btn => {
-        btn.addEventListener("click", async () => {
-          const reportId = btn.getAttribute("data-id");
-          await viewHistoricalReport(reportId);
-        });
-      });
-    } catch (err) {
-      console.warn("Failed to load handover history:", err);
-      tableBody.innerHTML = `<tr><td colspan="9" class="history-empty">Failed to load reports: ${escapeHtml(err.message)}</td></tr>`;
-    }
-  }
-
-  // View Specific Historical Report
-  async function viewHistoricalReport(reportId) {
-    try {
-      const res = await authFetch(`/api/reports/${reportId}`);
-      const data = await res.json();
-      if (data.success && data.report) {
-        const rep = data.report;
-        const formattedData = {
-          success: true,
-          shift_window: {
-            start: rep.shift_start,
-            end: rep.shift_end,
-            start_utc: rep.shift_start,
-            end_utc: rep.shift_end
-          },
-          metrics: {
-            total_raw_events: rep.total_items,
-            completed: rep.completed_count,
-            in_progress: rep.in_progress_count,
-            blockers: rep.blockers_count,
-            watch_list: rep.watchlist_count
-          },
-          sections: {
-            completed: rep.sections?.COMPLETED || [],
-            in_progress: rep.sections?.["IN PROGRESS"] || [],
-            blockers: rep.sections?.["BLOCKERS / ESCALATIONS"] || [],
-            watch_list: rep.sections?.["WATCH-LIST"] || []
-          },
-          pdf_url: `/api/download/${encodeURIComponent(rep.pdf_filename)}`
-        };
-
-        resultsSection.classList.remove("hidden");
-        renderResults(formattedData);
-        resultsSection.scrollIntoView({ behavior: "smooth" });
-      }
-    } catch (e) {
-      alert(`Error loading report #${reportId}: ${e.message}`);
-    }
-  }
-
-  // History Refresh Button
-  const btnRefreshHistory = document.getElementById("btn-refresh-history");
-  if (btnRefreshHistory) {
-    btnRefreshHistory.addEventListener("click", loadHandoverHistory);
-  }
-  loadHandoverHistory();
-
-  // Modal Listeners
-  btnViewPdf.addEventListener("click", () => {
-    pdfModal.classList.remove("hidden");
-  });
-
-  function closeModal() {
-    pdfModal.classList.add("hidden");
-  }
-
-  modalClose.addEventListener("click", closeModal);
-  modalDismissBtn.addEventListener("click", closeModal);
-  pdfModal.addEventListener("click", (e) => {
-    if (e.target === pdfModal) closeModal();
-  });
-
-  // Form Submit Handler
-  shiftForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    await triggerGeneration(false);
-    loadHandoverHistory();
-    loadSourceHealth();
-  });
-
-  // Dummy Test Handler
-  btnDummyTest.addEventListener("click", async () => {
-    await triggerGeneration(true);
-    loadHandoverHistory();
-    loadSourceHealth();
-  });
-
-  function escapeHtml(str) {
-    if (!str) return "";
-    return String(str)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
-  }
-});
-
-</script>
-<script src="/static/app.js"></script>
+  <script src="/static/app.js"></script>
 </body>
 </html>

@@ -1,8 +1,31 @@
 /**
  * app.js - Client-Side Controller for SHIFT//HANDOVER Web Dashboard
+ * Evidence-Grounded and Reliable Shift Handover Generator
  */
 
 document.addEventListener("DOMContentLoaded", () => {
+  // Authentication Helpers
+  function getAuthHeaders(headers = {}) {
+    const token = localStorage.getItem("shift_token");
+    const out = { ...headers };
+    if (token) {
+      out["Authorization"] = `Bearer ${token}`;
+    }
+    return out;
+  }
+
+  async function authFetch(url, options = {}) {
+    const opts = { ...options };
+    opts.headers = getAuthHeaders(opts.headers || {});
+    const res = await fetch(url, opts);
+    if (res.status === 401) {
+      localStorage.removeItem("shift_user");
+      localStorage.removeItem("shift_token");
+      window.location.href = "/login";
+    }
+    return res;
+  }
+
   // Elements
   const liveClockEl = document.getElementById("live-clock");
   const shiftForm = document.getElementById("shift-form");
@@ -29,6 +52,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnViewPdf = document.getElementById("btn-view-pdf");
   const btnDownloadPdf = document.getElementById("btn-download-pdf");
 
+  // Audit Stats Elements
+  const statTotalRecords = document.getElementById("stat-total-records");
+  const statIncludedRecords = document.getElementById("stat-included-records");
+  const statExcludedRecords = document.getElementById("stat-excluded-records");
+  const statUniqueItems = document.getElementById("stat-unique-items");
+
   // Metric Counters
   const cntCompleted = document.getElementById("cnt-completed");
   const cntInProgress = document.getElementById("cnt-in-progress");
@@ -46,41 +75,78 @@ document.addEventListener("DOMContentLoaded", () => {
   const listBlockers = document.getElementById("list-blockers");
   const listWatch = document.getElementById("list-watch");
 
-  // Modal UI
+  // PDF Modal UI
   const pdfModal = document.getElementById("pdf-modal");
   const modalClose = document.getElementById("modal-close");
   const modalDismissBtn = document.getElementById("modal-dismiss-btn");
   const modalDownloadLink = document.getElementById("modal-download-link");
   const pdfFrame = document.getElementById("pdf-frame");
 
-  // User Profile
-  function loadUserProfile() {
+  // Evidence Modal UI
+  const evidenceModal = document.getElementById("evidence-modal");
+  const evidenceTitle = document.getElementById("evidence-title");
+  const evidenceSubtitle = document.getElementById("evidence-subtitle");
+  const evidenceModalBody = document.getElementById("evidence-modal-body");
+  const evidenceModalClose = document.getElementById("evidence-modal-close");
+  const evidenceModalDismiss = document.getElementById("evidence-modal-dismiss");
+
+  // User Profile & Authentication Verification
+  async function loadUserProfile() {
+    try {
+      const res = await fetch("/api/me", { headers: getAuthHeaders() });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.authenticated && data.user) {
+          localStorage.setItem("shift_user", JSON.stringify(data.user));
+          const user = data.user;
+          const nameEl = document.getElementById("user-name");
+          const roleEl = document.getElementById("user-role");
+          const avatarEl = document.getElementById("user-avatar");
+          if (nameEl) nameEl.textContent = user.name || "Operator";
+          if (roleEl) roleEl.textContent = user.role || "On-Call SRE";
+          if (avatarEl) avatarEl.textContent = user.avatar || (user.name ? user.name.substring(0, 2).toUpperCase() : "OP");
+          return;
+        }
+      } else if (res.status === 401) {
+        localStorage.removeItem("shift_user");
+        localStorage.removeItem("shift_token");
+        window.location.href = "/login";
+        return;
+      }
+    } catch (e) {
+      console.warn("User auth verification check failed:", e);
+    }
+
     try {
       const stored = localStorage.getItem("shift_user");
-      let user = stored ? JSON.parse(stored) : null;
-      if (!user) {
-        user = {
-          name: "Alex Rivera",
-          role: "Lead On-Call SRE",
-          avatar: "AR"
-        };
+      if (!stored) {
+        window.location.href = "/login";
+        return;
       }
+      const user = JSON.parse(stored);
       const nameEl = document.getElementById("user-name");
       const roleEl = document.getElementById("user-role");
       const avatarEl = document.getElementById("user-avatar");
-      if (nameEl) nameEl.textContent = user.name;
-      if (roleEl) roleEl.textContent = user.role;
-      if (avatarEl) avatarEl.textContent = user.avatar || user.name.substring(0, 2).toUpperCase();
+      if (nameEl) nameEl.textContent = user.name || "Operator";
+      if (roleEl) roleEl.textContent = user.role || "On-Call SRE";
+      if (avatarEl) avatarEl.textContent = user.avatar || (user.name ? user.name.substring(0, 2).toUpperCase() : "OP");
     } catch (e) {
-      console.warn("Failed to load user profile:", e);
+      window.location.href = "/login";
     }
   }
   loadUserProfile();
 
+  // Logout Handler
   const btnLogout = document.getElementById("btn-logout");
   if (btnLogout) {
-    btnLogout.addEventListener("click", (e) => {
+    btnLogout.addEventListener("click", async (e) => {
+      e.preventDefault();
+      try {
+        await fetch("/api/logout", { method: "POST", headers: getAuthHeaders() });
+      } catch (err) {}
       localStorage.removeItem("shift_user");
+      localStorage.removeItem("shift_token");
+      window.location.href = "/login";
     });
   }
 
@@ -116,7 +182,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (ticketSource && ticketCountEl) {
         ticketCountEl.textContent = `${ticketSource.total_records} records`;
         if (ticketSource.connected) {
-          ticketBadgeEl.textContent = "● Connected";
+          ticketBadgeEl.textContent = "● Demo Source • Ready";
           ticketBadgeEl.className = "source-status-badge connected";
         } else {
           ticketBadgeEl.textContent = "● Unavailable";
@@ -127,7 +193,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (incidentSource && incidentCountEl) {
         incidentCountEl.textContent = `${incidentSource.total_records} records`;
         if (incidentSource.connected) {
-          incidentBadgeEl.textContent = "● Connected";
+          incidentBadgeEl.textContent = "● Demo Source • Ready";
           incidentBadgeEl.className = "source-status-badge connected";
         } else {
           incidentBadgeEl.textContent = "● Unavailable";
@@ -140,7 +206,7 @@ document.addEventListener("DOMContentLoaded", () => {
         dbCountsEl.textContent = `${dbStats.tickets_count} tickets / ${dbStats.incidents_count} incidents`;
         dbReportsCountEl.textContent = `${dbStats.reports_count} generated reports`;
         if (dbStats.connected) {
-          dbBadgeEl.textContent = "● Connected";
+          dbBadgeEl.textContent = "● Connected • Operational";
           dbBadgeEl.className = "source-status-badge connected";
         } else {
           dbBadgeEl.textContent = "● Disconnected";
@@ -154,7 +220,7 @@ document.addEventListener("DOMContentLoaded", () => {
   loadSourceHealth();
   if (btnRefreshSources) btnRefreshSources.addEventListener("click", loadSourceHealth);
 
-  // Quick Preset Click Handler
+  // Quick Shift Presets Click Handler
   presetPills.forEach(pill => {
     pill.addEventListener("click", () => {
       presetPills.forEach(p => p.classList.remove("active"));
@@ -177,7 +243,7 @@ document.addEventListener("DOMContentLoaded", () => {
       { el: stepFilter, msg: "Step 2/5: Normalizing UTC timestamps & filtering shift window [start, end)..." },
       { el: stepDedup, msg: "Step 3/5: Grouping by (source, record_id) & collapsing progression updates..." },
       { el: stepClassify, msg: "Step 4/5: Applying deterministic rule-based classification into 4 sections..." },
-      { el: stepPublish, msg: "Step 5/5: Compiling executive-ready single PDF report via ReportLab..." }
+      { el: stepPublish, msg: "Step 5/5: Compiling executive-grade single PDF report via ReportLab..." }
     ];
 
     for (let i = 0; i < steps.length; i++) {
@@ -191,7 +257,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       });
       progressMsg.textContent = steps[i].msg;
-      await new Promise(r => setTimeout(r, 120));
+      await new Promise(r => setTimeout(r, 100));
     }
   }
 
@@ -218,7 +284,7 @@ document.addEventListener("DOMContentLoaded", () => {
     await animatePipelineSteps();
 
     try {
-      const response = await fetch("/api/generate", {
+      const response = await authFetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -247,7 +313,7 @@ document.addEventListener("DOMContentLoaded", () => {
         progressSection.classList.add("hidden");
         resultsSection.classList.remove("hidden");
         resultsSection.scrollIntoView({ behavior: "smooth", block: "start" });
-      }, 250);
+      }, 200);
 
     } catch (err) {
       alert(`Error generating handover note:\n${err.message}`);
@@ -258,12 +324,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Render Section Items
+  // Render Section Items with Evidence Trigger
   function renderSectionList(container, items, sectionName) {
     container.innerHTML = "";
 
     if (!items || items.length === 0) {
-      container.innerHTML = `<div class="empty-state-banner">Nothing to report.</div>`;
+      container.innerHTML = `<div class="empty-state-banner">No activity recorded in this category during the selected shift.</div>`;
       return;
     }
 
@@ -272,7 +338,7 @@ document.addEventListener("DOMContentLoaded", () => {
       card.className = "handover-item";
 
       const recId = item.record_id || "N/A";
-      const source = item.source || "Unknown System";
+      const source = item.source || "Sample Data";
       const summary = item.summary || item.title || "Untitled Activity";
       const timestamp = item.timestamp || item.timestamp_display || "N/A";
       const status = (item.status || "N/A").replace(/_/g, " ").toUpperCase();
@@ -280,6 +346,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const assignee = item.assignee || item.service || "";
       const details = item.details || item.notes || "";
       const progression = item.progression || [];
+      const evidence = item.evidence || null;
 
       let badgesHtml = `<span class="badge-pill badge-status">${escapeHtml(status)}</span>`;
       if (priority) {
@@ -317,13 +384,108 @@ document.addEventListener("DOMContentLoaded", () => {
 
         <div class="item-badges-row">
           ${badgesHtml}
+          <button type="button" class="btn-view-evidence" data-evidence='${escapeHtml(JSON.stringify(evidence || item))}'>
+            <span>🔍 View Evidence</span>
+          </button>
         </div>
 
         ${detailsHtml}
         ${progressionHtml}
       `;
 
+      // Attach Evidence Modal Click Handler
+      const evidenceBtn = card.querySelector(".btn-view-evidence");
+      if (evidenceBtn) {
+        evidenceBtn.addEventListener("click", () => {
+          openEvidenceModal(item);
+        });
+      }
+
       container.appendChild(card);
+    });
+  }
+
+  // Open Evidence Grounding Modal
+  function openEvidenceModal(item) {
+    if (!evidenceModal) return;
+
+    const recId = item.record_id || "N/A";
+    const source = item.source || "Sample Source";
+    const evidence = item.evidence || {};
+    const updates = evidence.all_updates || [
+      {
+        timestamp: item.timestamp || "N/A",
+        status: item.status || "N/A",
+        summary: item.summary || "",
+        details: item.details || "",
+        assignee: item.assignee || "",
+        priority: item.priority || ""
+      }
+    ];
+
+    if (evidenceTitle) evidenceTitle.textContent = `Evidence Trace: [${recId}]`;
+    if (evidenceSubtitle) evidenceSubtitle.textContent = `Source System: ${source} • ${updates.length} Grounded Update(s)`;
+
+    if (evidenceModalBody) {
+      let updatesHtml = "";
+      updates.forEach((u, i) => {
+        updatesHtml += `
+          <div class="evidence-update-card">
+            <div class="evidence-update-top">
+              <span class="evidence-update-time">#${i + 1} • ${escapeHtml(u.timestamp || "N/A")}</span>
+              <span class="evidence-update-status">${escapeHtml(u.status || "UPDATE")}</span>
+            </div>
+            ${u.summary ? `<div style="font-weight:600; color:var(--text-main); font-size:12px; margin-bottom:2px;">${escapeHtml(u.summary)}</div>` : ''}
+            ${u.details && u.details !== u.summary ? `<p class="evidence-update-desc">${escapeHtml(u.details)}</p>` : ''}
+            <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">
+              ${u.assignee ? `<span>Assignee: ${escapeHtml(u.assignee)}</span> ` : ''}
+              ${u.priority ? `<span>• Priority: ${escapeHtml(u.priority)}</span>` : ''}
+            </div>
+          </div>
+        `;
+      });
+
+      evidenceModalBody.innerHTML = `
+        <div class="evidence-header-info">
+          <div class="evidence-meta-row">
+            <span class="evidence-meta-label">Record Identifier</span>
+            <span class="evidence-meta-val">${escapeHtml(recId)}</span>
+          </div>
+          <div class="evidence-meta-row">
+            <span class="evidence-meta-label">Origin Feed</span>
+            <span class="evidence-meta-val">${escapeHtml(source)}</span>
+          </div>
+          <div class="evidence-meta-row">
+            <span class="evidence-meta-label">First Recorded</span>
+            <span class="evidence-meta-val">${escapeHtml(evidence.first_seen || item.timestamp || "N/A")}</span>
+          </div>
+          <div class="evidence-meta-row">
+            <span class="evidence-meta-label">Latest Transition</span>
+            <span class="evidence-meta-val">${escapeHtml(evidence.last_updated || item.timestamp || "N/A")}</span>
+          </div>
+        </div>
+
+        <div class="evidence-timeline-title">
+          <span>📜 Raw Activity Progression Audit Trail:</span>
+        </div>
+        <div class="evidence-updates-list">
+          ${updatesHtml}
+        </div>
+      `;
+    }
+
+    evidenceModal.classList.remove("hidden");
+  }
+
+  function closeEvidenceModal() {
+    if (evidenceModal) evidenceModal.classList.add("hidden");
+  }
+
+  if (evidenceModalClose) evidenceModalClose.addEventListener("click", closeEvidenceModal);
+  if (evidenceModalDismiss) evidenceModalDismiss.addEventListener("click", closeEvidenceModal);
+  if (evidenceModal) {
+    evidenceModal.addEventListener("click", (e) => {
+      if (e.target === evidenceModal) closeEvidenceModal();
     });
   }
 
@@ -333,10 +495,18 @@ document.addEventListener("DOMContentLoaded", () => {
     resultsWindowLabel.textContent = `Shift: ${shift.start} → ${shift.end} (${shift.start_utc || ''})`;
 
     const metrics = data.metrics || {};
-    cntCompleted.textContent = metrics.completed || 0;
-    cntInProgress.textContent = metrics.in_progress || 0;
-    cntBlockers.textContent = metrics.blockers || 0;
-    cntWatch.textContent = metrics.watch_list || 0;
+    
+    // Update Audit & Filter Statistics Bar
+    if (statTotalRecords) statTotalRecords.textContent = metrics.total_source_records ?? metrics.total_raw_events ?? 0;
+    if (statIncludedRecords) statIncludedRecords.textContent = metrics.records_inside_shift ?? metrics.total_raw_events ?? 0;
+    if (statExcludedRecords) statExcludedRecords.textContent = metrics.records_excluded ?? 0;
+    if (statUniqueItems) statUniqueItems.textContent = metrics.unique_items_count ?? metrics.total_collapsed_items ?? 0;
+
+    // Update Metric Counters
+    if (cntCompleted) cntCompleted.textContent = metrics.completed || 0;
+    if (cntInProgress) cntInProgress.textContent = metrics.in_progress || 0;
+    if (cntBlockers) cntBlockers.textContent = metrics.blockers || 0;
+    if (cntWatch) cntWatch.textContent = metrics.watch_list || 0;
 
     const sections = data.sections || {};
     const compList = sections.completed || [];
@@ -344,10 +514,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const blockList = sections.blockers || [];
     const watchList = sections.watch_list || [];
 
-    badgeCompleted.textContent = `${compList.length} item(s)`;
-    badgeInProgress.textContent = `${inProgList.length} item(s)`;
-    badgeBlockers.textContent = `${blockList.length} item(s)`;
-    badgeWatch.textContent = `${watchList.length} item(s)`;
+    if (badgeCompleted) badgeCompleted.textContent = `${compList.length} item(s)`;
+    if (badgeInProgress) badgeInProgress.textContent = `${inProgList.length} item(s)`;
+    if (badgeBlockers) badgeBlockers.textContent = `${blockList.length} item(s)`;
+    if (badgeWatch) badgeWatch.textContent = `${watchList.length} item(s)`;
 
     renderSectionList(listCompleted, compList, "COMPLETED");
     renderSectionList(listInProgress, inProgList, "IN PROGRESS");
@@ -356,19 +526,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // PDF Links
     if (data.pdf_url) {
-      btnDownloadPdf.href = `${data.pdf_url}?download=1`;
-      modalDownloadLink.href = `${data.pdf_url}?download=1`;
-      pdfFrame.src = data.pdf_url;
+      if (btnDownloadPdf) btnDownloadPdf.href = `${data.pdf_url}?download=1`;
+      if (modalDownloadLink) modalDownloadLink.href = `${data.pdf_url}?download=1`;
+      if (pdfFrame) pdfFrame.src = data.pdf_url;
     }
   }
 
-  // Load Handover History from SQLite
+  // Load Handover History from Database
   async function loadHandoverHistory() {
     const tableBody = document.getElementById("history-table-body");
     if (!tableBody) return;
 
     try {
-      const res = await fetch("/api/reports");
+      const res = await authFetch("/api/reports");
       const data = await res.json();
       const reports = data.reports || [];
 
@@ -417,7 +587,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // View Specific Historical Report
   async function viewHistoricalReport(reportId) {
     try {
-      const res = await fetch(`/api/reports/${reportId}`);
+      const res = await authFetch(`/api/reports/${reportId}`);
       const data = await res.json();
       if (data.success && data.report) {
         const rep = data.report;
@@ -430,7 +600,11 @@ document.addEventListener("DOMContentLoaded", () => {
             end_utc: rep.shift_end
           },
           metrics: {
+            total_source_records: rep.total_items,
             total_raw_events: rep.total_items,
+            records_inside_shift: rep.total_items,
+            records_excluded: 0,
+            unique_items_count: (rep.completed_count + rep.in_progress_count + rep.blockers_count + rep.watchlist_count),
             completed: rep.completed_count,
             in_progress: rep.in_progress_count,
             blockers: rep.blockers_count,
@@ -461,35 +635,53 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   loadHandoverHistory();
 
-  // Modal Listeners
-  btnViewPdf.addEventListener("click", () => {
-    pdfModal.classList.remove("hidden");
-  });
-
-  function closeModal() {
-    pdfModal.classList.add("hidden");
+  // PDF Modal Listeners
+  if (btnViewPdf && pdfModal) {
+    btnViewPdf.addEventListener("click", () => {
+      pdfModal.classList.remove("hidden");
+    });
   }
 
-  modalClose.addEventListener("click", closeModal);
-  modalDismissBtn.addEventListener("click", closeModal);
-  pdfModal.addEventListener("click", (e) => {
-    if (e.target === pdfModal) closeModal();
-  });
+  function closePdfModal() {
+    if (pdfModal) pdfModal.classList.add("hidden");
+  }
+
+  if (modalClose) modalClose.addEventListener("click", closePdfModal);
+  if (modalDismissBtn) modalDismissBtn.addEventListener("click", closePdfModal);
+  if (pdfModal) {
+    pdfModal.addEventListener("click", (e) => {
+      if (e.target === pdfModal) closePdfModal();
+    });
+  }
 
   // Form Submit Handler
-  shiftForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    await triggerGeneration(false);
-    loadHandoverHistory();
-    loadSourceHealth();
-  });
+  if (shiftForm) {
+    shiftForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      await triggerGeneration(false);
+      loadHandoverHistory();
+      loadSourceHealth();
+    });
+  }
 
   // Dummy Test Handler
-  btnDummyTest.addEventListener("click", async () => {
-    await triggerGeneration(true);
-    loadHandoverHistory();
-    loadSourceHealth();
-  });
+  if (btnDummyTest) {
+    btnDummyTest.addEventListener("click", async () => {
+      await triggerGeneration(true);
+      loadHandoverHistory();
+      loadSourceHealth();
+    });
+  }
+
+  // Hero Quick Run Handler
+  const heroRunBtn = document.getElementById("hero-run-btn");
+  if (heroRunBtn) {
+    heroRunBtn.addEventListener("click", async () => {
+      await triggerGeneration(false);
+      loadHandoverHistory();
+      loadSourceHealth();
+    });
+  }
 
   function escapeHtml(str) {
     if (!str) return "";

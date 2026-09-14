@@ -25,6 +25,7 @@ from typing import Any, Dict, Optional
 from flask import (
     Flask,
     jsonify,
+    redirect,
     render_template,
     request,
     send_file,
@@ -365,7 +366,10 @@ def api_logout():
 @app.route("/api/index")
 @app.route("/api/index.py")
 def index():
-    """Renders the main Shift Handover Web Dashboard."""
+    """Renders the main Shift Handover Web Dashboard (guarded)."""
+    user = get_current_user()
+    if not user:
+        return redirect("/login")
     try:
         return render_template("index.html")
     except Exception as e:
@@ -533,10 +537,19 @@ def api_generate():
         start_utc = start_dt.strftime("%Y-%m-%d %H:%M:%S UTC")
         end_utc = end_dt.strftime("%Y-%m-%d %H:%M:%S UTC")
 
+        # Total feed records across connected data sources
+        total_source_records = 0
+        try:
+            total_source_records = len(get_all_tickets(DB_PATH)) + len(get_all_incidents(DB_PATH))
+        except Exception:
+            total_source_records = 0
+
         # 2. Ingestion & Pipeline from PostgreSQL / SQLite
         if dummy_mode:
             sections = generate_dummy_handover()
             total_raw = 3
+            if total_source_records == 0:
+                total_source_records = 3
         else:
             sources = [
                 {"path": TICKETS_PATH, "name": "Ticketing"},
@@ -545,6 +558,18 @@ def api_generate():
             raw_events = fetch_activities(sources, start_dt, end_dt, use_db=True, db_path=DB_PATH)
             total_raw = len(raw_events)
             sections = generate_handover(raw_events)
+
+        if total_source_records < total_raw:
+            total_source_records = total_raw
+
+        records_excluded = max(0, total_source_records - total_raw)
+
+        completed_items = sections.get("COMPLETED", [])
+        in_progress_items = sections.get("IN PROGRESS", [])
+        blockers_items = sections.get("BLOCKERS / ESCALATIONS", [])
+        watch_list_items = sections.get("WATCH-LIST", [])
+
+        total_collapsed = len(completed_items) + len(in_progress_items) + len(blockers_items) + len(watch_list_items)
 
         # 3. PDF Generation
         filename_start = start_dt.strftime("%Y%m%d_%H%M%S")
@@ -556,18 +581,14 @@ def api_generate():
             "shift_start": f"{start_str} ({start_utc})",
             "shift_end": f"{end_str} ({end_utc})",
             "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC"),
-            "total_items": total_raw
+            "total_items": total_source_records,
+            "records_inside_shift": total_raw,
+            "records_excluded": records_excluded,
+            "unique_items_count": total_collapsed
         }
 
         final_pdf_path = build_pdf_document(sections, pdf_path, shift_meta)
         actual_filename = os.path.basename(final_pdf_path)
-
-        completed_items = sections.get("COMPLETED", [])
-        in_progress_items = sections.get("IN PROGRESS", [])
-        blockers_items = sections.get("BLOCKERS / ESCALATIONS", [])
-        watch_list_items = sections.get("WATCH-LIST", [])
-
-        total_collapsed = len(completed_items) + len(in_progress_items) + len(blockers_items) + len(watch_list_items)
 
         # 4. Save into Database
         report_id = None
@@ -597,7 +618,11 @@ def api_generate():
             "pdf_url": f"/api/download/{actual_filename}",
             "pdf_filename": actual_filename,
             "metrics": {
+                "total_source_records": total_source_records,
                 "total_raw_events": total_raw,
+                "records_inside_shift": total_raw,
+                "records_excluded": records_excluded,
+                "unique_items_count": total_collapsed,
                 "total_collapsed_items": total_collapsed,
                 "completed": len(completed_items),
                 "in_progress": len(in_progress_items),

@@ -65,6 +65,25 @@ def group_and_collapse_updates(raw_events: List[Dict[str, Any]]) -> List[Dict[st
 
         display_ts = latest_update.get("timestamp") or latest_update.get("timestamp_display") or latest_update.get("normalized_timestamp", "N/A")
 
+        evidence = {
+            "source_id": rec_id,
+            "source_system": src,
+            "update_count": len(sorted_updates),
+            "first_seen": first_update.get("timestamp") or (first_update.get("normalized_dt").isoformat() if first_update.get("normalized_dt") else "N/A"),
+            "last_updated": latest_update.get("timestamp") or (latest_update.get("normalized_dt").isoformat() if latest_update.get("normalized_dt") else "N/A"),
+            "all_updates": [
+                {
+                    "timestamp": u.get("timestamp") or u.get("normalized_timestamp") or "N/A",
+                    "status": str(u.get("status", "unknown")).replace("_", " ").title(),
+                    "summary": u.get("summary") or u.get("title") or "",
+                    "details": u.get("details") or u.get("notes") or "",
+                    "assignee": u.get("assignee") or u.get("service") or "",
+                    "priority": u.get("priority") or u.get("severity") or ""
+                }
+                for u in sorted_updates
+            ]
+        }
+
         collapsed_item = {
             "record_id": rec_id,
             "source": src,
@@ -78,6 +97,7 @@ def group_and_collapse_updates(raw_events: List[Dict[str, Any]]) -> List[Dict[st
             "blocker_reason": blocker_reason,
             "watch_reason": watch_reason,
             "progression": progression,
+            "evidence": evidence,
             "latest_dt": latest_update.get("normalized_dt"),
             "timestamp": display_ts,
             "raw_update_count": len(sorted_updates)
