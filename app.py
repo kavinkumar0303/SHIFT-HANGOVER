@@ -399,10 +399,7 @@ def api_logout():
 @app.route("/api/index")
 @app.route("/api/index.py")
 def index():
-    """Renders the main Shift Handover Web Dashboard (guarded)."""
-    user = get_current_user()
-    if not user:
-        return redirect("/login")
+    """Renders the main Shift Handover Web Dashboard."""
     try:
         return render_template("index.html")
     except Exception as e:
