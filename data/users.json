@@ -1,0 +1,29 @@
+[
+  {
+    "email": "operator@noc.internal",
+    "password_hash": "scrypt:32768:8:1$psUjktIak3GyUfVq$50873c6e1c05bb198e937dca0d44f84198f55ed6316c214829b6766c9e8401d92eecd3514634caab7218202618495372af10431cb1182eed13e4dc47a3652bad",
+    "name": "Alex Rivera",
+    "role": "Lead On-Call SRE",
+    "team": "Core Platform NOC",
+    "badge": "L3 Operations",
+    "avatar": "AR"
+  },
+  {
+    "email": "supervisor@noc.internal",
+    "password_hash": "scrypt:32768:8:1$psUjktIak3GyUfVq$50873c6e1c05bb198e937dca0d44f84198f55ed6316c214829b6766c9e8401d92eecd3514634caab7218202618495372af10431cb1182eed13e4dc47a3652bad",
+    "name": "Maria Garcia",
+    "role": "Shift Operations Supervisor",
+    "team": "Global Incident Command",
+    "badge": "Incident Commander",
+    "avatar": "MG"
+  },
+  {
+    "email": "admin@shifthandover.io",
+    "password_hash": "scrypt:32768:8:1$psUjktIak3GyUfVq$50873c6e1c05bb198e937dca0d44f84198f55ed6316c214829b6766c9e8401d92eecd3514634caab7218202618495372af10431cb1182eed13e4dc47a3652bad",
+    "name": "Admin Engineer",
+    "role": "System Administrator",
+    "team": "Infrastructure & Mesh",
+    "badge": "Root Admin",
+    "avatar": "AD"
+  }
+]

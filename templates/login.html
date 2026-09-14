@@ -1524,35 +1524,44 @@ body {
     document.addEventListener("DOMContentLoaded", () => {
       const form = document.getElementById("login-form");
       const emailInput = document.getElementById("login-email");
+      const passInput = document.getElementById("login-pass");
       const demoBtns = document.querySelectorAll(".demo-user-btn");
 
-      async function doLogin(email) {
+      async function doLogin(email, password) {
         try {
           const res = await fetch("/api/login", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email: email, password: "demo" })
+            body: JSON.stringify({ email: email, password: password })
           });
           const data = await res.json();
           if (data.success) {
             localStorage.setItem("shift_user", JSON.stringify(data.user));
+            if (data.token) {
+              localStorage.setItem("shift_token", data.token);
+            }
             window.location.href = "/";
+          } else {
+            alert(data.error || "Authentication failed. Please verify credentials.");
           }
         } catch (err) {
-          window.location.href = "/";
+          console.error("Login request error:", err);
+          alert("Network error connecting to authentication service.");
         }
       }
 
       form.addEventListener("submit", (e) => {
         e.preventDefault();
-        doLogin(emailInput.value);
+        const pwd = passInput ? passInput.value : "demo";
+        doLogin(emailInput.value.trim(), pwd === "••••••••••••" ? "demo" : pwd);
       });
 
       demoBtns.forEach(btn => {
         btn.addEventListener("click", () => {
           const email = btn.getAttribute("data-email");
           emailInput.value = email;
-          doLogin(email);
+          if (passInput) passInput.value = "demo";
+          doLogin(email, "demo");
         });
       });
     });

@@ -14,10 +14,14 @@ Provides:
 - GET /static/<filename> : Static CSS / JS / Assets
 """
 
+import json
 import logging
 import os
 import sys
 from datetime import datetime, timezone
+from functools import wraps
+from typing import Any, Dict, Optional
+
 from flask import (
     Flask,
     jsonify,
@@ -25,7 +29,10 @@ from flask import (
     request,
     send_file,
     send_from_directory,
+    session,
 )
+from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
+from werkzeug.security import check_password_hash, generate_password_hash
 
 from database import (
     get_all_incidents,
@@ -84,20 +91,31 @@ def get_output_dir() -> str:
         return tmp_dir
 
 
+DEFAULT_SECRET_KEY = "shift-handover-secure-secret-key-2026"
+
 app = Flask(
     __name__,
     template_folder=os.path.join(BASE_DIR, "templates"),
     static_folder=os.path.join(BASE_DIR, "static"),
     static_url_path="/static"
 )
-app.secret_key = os.getenv("SECRET_KEY", "shift-handover-secure-secret-key-2026")
+app.secret_key = os.getenv("SECRET_KEY", DEFAULT_SECRET_KEY)
+
+# Startup warning if using default SECRET_KEY in non-debug mode
+if not app.debug and app.secret_key == DEFAULT_SECRET_KEY:
+    logger.warning(
+        "SECURITY WARNING: Running in a non-debug environment with the default SECRET_KEY! "
+        "Please set a secure SECRET_KEY environment variable in production."
+    )
+
+serializer = URLSafeTimedSerializer(app.secret_key, salt="shift-auth-token")
 
 
 # Enable CORS for Flutter Web / Mobile clients
 @app.after_request
 def add_cors_headers(response):
     response.headers["Access-Control-Allow-Origin"] = "*"
-    response.headers["Access-Control-Allow-Headers"] = "Content-Type,Authorization"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type,Authorization,X-Auth-Token"
     response.headers["Access-Control-Allow-Methods"] = "GET,POST,OPTIONS"
     return response
 
@@ -109,14 +127,18 @@ def add_cors_headers(response):
 @app.route("/api/reports", methods=["OPTIONS"])
 @app.route("/api/data/tickets", methods=["OPTIONS"])
 @app.route("/api/data/incidents", methods=["OPTIONS"])
+@app.route("/api/debug-env", methods=["OPTIONS"])
 def api_options():
     return jsonify({"status": "ok"}), 200
 
 
-# Mock User Accounts for NOC & On-Call Teams
-DEMO_USERS = {
+# User Accounts for NOC & On-Call Teams
+USERS_PATH = os.getenv("USERS_DATA_PATH", os.path.join(BASE_DIR, "data", "users.json"))
+
+DEFAULT_DEMO_USERS: Dict[str, Dict[str, Any]] = {
     "operator@noc.internal": {
         "email": "operator@noc.internal",
+        "password_hash": generate_password_hash("demo"),
         "name": "Alex Rivera",
         "role": "Lead On-Call SRE",
         "team": "Core Platform NOC",
@@ -125,6 +147,7 @@ DEMO_USERS = {
     },
     "supervisor@noc.internal": {
         "email": "supervisor@noc.internal",
+        "password_hash": generate_password_hash("demo"),
         "name": "Maria Garcia",
         "role": "Shift Operations Supervisor",
         "team": "Global Incident Command",
@@ -133,6 +156,7 @@ DEMO_USERS = {
     },
     "admin@shifthandover.io": {
         "email": "admin@shifthandover.io",
+        "password_hash": generate_password_hash("demo"),
         "name": "Admin Engineer",
         "role": "System Administrator",
         "team": "Infrastructure & Mesh",
@@ -140,6 +164,99 @@ DEMO_USERS = {
         "avatar": "AD"
     }
 }
+
+
+def load_users() -> Dict[str, Dict[str, Any]]:
+    """Loads users from users.json seed or falls back to DEFAULT_DEMO_USERS."""
+    if os.path.exists(USERS_PATH):
+        try:
+            with open(USERS_PATH, "r", encoding="utf-8") as f:
+                user_list = json.load(f)
+                users = {}
+                for u in user_list:
+                    email = (u.get("email") or "").strip().lower()
+                    if not email:
+                        continue
+                    if "password_hash" not in u and "password" in u:
+                        u["password_hash"] = generate_password_hash(u["password"])
+                    elif "password_hash" not in u:
+                        u["password_hash"] = generate_password_hash("demo")
+                    users[email] = u
+                if users:
+                    return users
+        except Exception as e:
+            logger.warning(f"Failed to load users from {USERS_PATH}: {e}")
+    return DEFAULT_DEMO_USERS
+
+
+def get_user_by_email(email: str) -> Optional[Dict[str, Any]]:
+    """Looks up user by email (case-insensitive)."""
+    if not email:
+        return None
+    users = load_users()
+    return users.get(email.strip().lower())
+
+
+def get_current_user() -> Optional[Dict[str, Any]]:
+    """
+    Extracts and validates token from Authorization header, X-Auth-Token, or session.
+    Returns user dict if valid and unexpired, None otherwise.
+    """
+    token = None
+
+    # 1. Check Authorization header (Bearer <token> or <token>)
+    auth_header = request.headers.get("Authorization", "").strip()
+    if auth_header:
+        if auth_header.lower().startswith("bearer "):
+            token = auth_header[7:].strip()
+        else:
+            token = auth_header
+
+    # 2. Check X-Auth-Token header
+    if not token:
+        token = request.headers.get("X-Auth-Token", "").strip()
+
+    # 3. Check Flask session
+    if not token:
+        token = session.get("token")
+
+    if token:
+        try:
+            # 24 hour token validity = 86400 seconds
+            payload = serializer.loads(token, max_age=86400)
+            email = (payload.get("email") or "").strip().lower()
+            if email:
+                user = get_user_by_email(email)
+                if user:
+                    return user
+            return None
+        except (SignatureExpired, BadSignature, Exception):
+            return None
+
+    # Fallback: check session user_email if session token was not explicitly set
+    session_email = session.get("user_email")
+    if session_email:
+        user = get_user_by_email(str(session_email).strip().lower())
+        if user:
+            return user
+
+    return None
+
+
+def require_auth(f):
+    """Decorator to require valid authentication token or session."""
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        user = get_current_user()
+        if not user:
+            return jsonify({
+                "success": False,
+                "authenticated": False,
+                "error": "Unauthorized: Authentication token is missing, invalid, or expired."
+            }), 401
+        return f(*args, **kwargs)
+    return decorated
+
 
 # Configuration
 TICKETS_PATH = os.getenv("TICKETS_DATA_PATH", os.path.join(BASE_DIR, "data", "tickets.json"))
@@ -173,30 +290,40 @@ def login_page():
 @app.route("/api/index.py/api/login", methods=["POST"])
 def api_login():
     """
-    Authenticates operator with email & password (or demo login).
+    Authenticates operator with email & password.
+    Validates password hash, issues real signed token, sets session.
     """
     try:
         data = request.get_json(silent=True) or {}
         email = (data.get("email") or "").strip().lower()
+        password = data.get("password")
 
         if not email:
             return jsonify({"success": False, "error": "Email is required."}), 400
 
-        user = DEMO_USERS.get(email, {
-            "email": email,
-            "name": email.split("@")[0].replace(".", " ").title(),
-            "role": "On-Call Engineer",
-            "team": "NOC Operations",
-            "badge": "Active On-Call",
-            "avatar": (email[:2]).upper()
-        })
+        if not password:
+            return jsonify({"success": False, "error": "Password is required."}), 401
+
+        user = get_user_by_email(email)
+        if not user or not check_password_hash(user.get("password_hash", ""), password):
+            return jsonify({"success": False, "error": "Invalid email or password."}), 401
+
+        # Generate signed session token
+        token = serializer.dumps({"email": user["email"]})
+
+        # Store in session
+        session["token"] = token
+        session["user_email"] = user["email"]
+
+        # Safe user payload (exclude password_hash)
+        safe_user = {k: v for k, v in user.items() if k != "password_hash"}
 
         return jsonify({
             "success": True,
             "message": "Authentication successful.",
-            "user": user,
-            "token": f"noc-token-{int(datetime.now().timestamp())}"
-        })
+            "user": safe_user,
+            "token": token
+        }), 200
     except Exception as e:
         logger.error(f"API login error: {e}")
         return jsonify({"success": False, "error": "Authentication service error."}), 500
@@ -208,10 +335,18 @@ def api_login():
 def api_me():
     """Returns currently authenticated operator profile."""
     try:
+        user = get_current_user()
+        if not user:
+            return jsonify({
+                "authenticated": False,
+                "error": "Unauthorized: Authentication token is missing, invalid, or expired."
+            }), 401
+
+        safe_user = {k: v for k, v in user.items() if k != "password_hash"}
         return jsonify({
             "authenticated": True,
-            "user": DEMO_USERS["operator@noc.internal"]
-        })
+            "user": safe_user
+        }), 200
     except Exception as e:
         logger.error(f"API me error: {e}")
         return jsonify({"authenticated": False, "error": "Internal server error"}), 500
@@ -221,7 +356,8 @@ def api_me():
 @app.route("/api/index/api/logout", methods=["POST"])
 @app.route("/api/index.py/api/logout", methods=["POST"])
 def api_logout():
-    """Logs out current operator."""
+    """Logs out current operator and clears session."""
+    session.clear()
     return jsonify({"success": True, "message": "Logged out successfully."})
 
 
@@ -240,8 +376,12 @@ def index():
 @app.route("/api/debug-env", methods=["GET"])
 @app.route("/api/index/api/debug-env", methods=["GET"])
 @app.route("/api/index.py/api/debug-env", methods=["GET"])
+@require_auth
 def api_debug_env():
-    """Diagnostic endpoint to inspect request headers and environ for serverless troubleshooting."""
+    """Diagnostic endpoint to inspect request headers and environ for serverless troubleshooting (debug only)."""
+    if not app.debug:
+        return jsonify({"error": "Endpoint disabled in non-debug environment."}), 404
+
     safe_environ = {}
     for k, v in request.environ.items():
         if isinstance(v, (str, int, float, bool, list, dict)):
@@ -287,6 +427,7 @@ def api_status():
 @app.route("/api/data/tickets", methods=["GET"])
 @app.route("/api/index/api/data/tickets", methods=["GET"])
 @app.route("/api/index.py/api/data/tickets", methods=["GET"])
+@require_auth
 def api_data_tickets():
     """Returns all ticket records stored in database."""
     try:
@@ -300,6 +441,7 @@ def api_data_tickets():
 @app.route("/api/data/incidents", methods=["GET"])
 @app.route("/api/index/api/data/incidents", methods=["GET"])
 @app.route("/api/index.py/api/data/incidents", methods=["GET"])
+@require_auth
 def api_data_incidents():
     """Returns all incident records stored in database."""
     try:
@@ -313,6 +455,7 @@ def api_data_incidents():
 @app.route("/api/reports", methods=["GET"])
 @app.route("/api/index/api/reports", methods=["GET"])
 @app.route("/api/index.py/api/reports", methods=["GET"])
+@require_auth
 def api_reports_list():
     """Returns historical generated handover reports from database."""
     try:
@@ -326,6 +469,7 @@ def api_reports_list():
 @app.route("/api/reports/<int:report_id>", methods=["GET"])
 @app.route("/api/index/api/reports/<int:report_id>", methods=["GET"])
 @app.route("/api/index.py/api/reports/<int:report_id>", methods=["GET"])
+@require_auth
 def api_report_detail(report_id):
     """Returns full details and classified items of a specific handover report."""
     try:
@@ -341,6 +485,7 @@ def api_report_detail(report_id):
 @app.route("/api/generate", methods=["POST"])
 @app.route("/api/index/api/generate", methods=["POST"])
 @app.route("/api/index.py/api/generate", methods=["POST"])
+@require_auth
 def api_generate():
     """
     Main Generation API:

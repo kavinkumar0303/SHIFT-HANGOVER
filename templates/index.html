@@ -1875,8 +1875,50 @@ document.addEventListener("DOMContentLoaded", () => {
   const modalDownloadLink = document.getElementById("modal-download-link");
   const pdfFrame = document.getElementById("pdf-frame");
 
+  // Authentication Helpers
+  function getAuthHeaders(headers = {}) {
+    const token = localStorage.getItem("shift_token");
+    const out = { ...headers };
+    if (token) {
+      out["Authorization"] = `Bearer ${token}`;
+    }
+    return out;
+  }
+
+  async function authFetch(url, options = {}) {
+    const opts = { ...options };
+    opts.headers = getAuthHeaders(opts.headers || {});
+    const res = await fetch(url, opts);
+    if (res.status === 401) {
+      localStorage.removeItem("shift_user");
+      localStorage.removeItem("shift_token");
+      window.location.href = "/login";
+    }
+    return res;
+  }
+
   // User Profile
-  function loadUserProfile() {
+  async function loadUserProfile() {
+    try {
+      const res = await fetch("/api/me", { headers: getAuthHeaders() });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.authenticated && data.user) {
+          localStorage.setItem("shift_user", JSON.stringify(data.user));
+          const user = data.user;
+          const nameEl = document.getElementById("user-name");
+          const roleEl = document.getElementById("user-role");
+          const avatarEl = document.getElementById("user-avatar");
+          if (nameEl) nameEl.textContent = user.name;
+          if (roleEl) roleEl.textContent = user.role;
+          if (avatarEl) avatarEl.textContent = user.avatar || user.name.substring(0, 2).toUpperCase();
+          return;
+        }
+      }
+    } catch (e) {
+      console.warn("Failed to load user profile from server:", e);
+    }
+
     try {
       const stored = localStorage.getItem("shift_user");
       let user = stored ? JSON.parse(stored) : null;
@@ -1894,15 +1936,21 @@ document.addEventListener("DOMContentLoaded", () => {
       if (roleEl) roleEl.textContent = user.role;
       if (avatarEl) avatarEl.textContent = user.avatar || user.name.substring(0, 2).toUpperCase();
     } catch (e) {
-      console.warn("Failed to load user profile:", e);
+      console.warn("Failed to load fallback user profile:", e);
     }
   }
   loadUserProfile();
 
   const btnLogout = document.getElementById("btn-logout");
   if (btnLogout) {
-    btnLogout.addEventListener("click", (e) => {
+    btnLogout.addEventListener("click", async (e) => {
+      e.preventDefault();
+      try {
+        await fetch("/api/logout", { method: "POST", headers: getAuthHeaders() });
+      } catch (err) {}
       localStorage.removeItem("shift_user");
+      localStorage.removeItem("shift_token");
+      window.location.href = "/login";
     });
   }
 
@@ -2040,7 +2088,7 @@ document.addEventListener("DOMContentLoaded", () => {
     await animatePipelineSteps();
 
     try {
-      const response = await fetch("/api/generate", {
+      const response = await authFetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -2190,7 +2238,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!tableBody) return;
 
     try {
-      const res = await fetch("/api/reports");
+      const res = await authFetch("/api/reports");
       const data = await res.json();
       const reports = data.reports || [];
 
@@ -2239,7 +2287,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // View Specific Historical Report
   async function viewHistoricalReport(reportId) {
     try {
-      const res = await fetch(`/api/reports/${reportId}`);
+      const res = await authFetch(`/api/reports/${reportId}`);
       const data = await res.json();
       if (data.success && data.report) {
         const rep = data.report;

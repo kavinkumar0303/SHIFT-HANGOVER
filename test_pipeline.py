@@ -261,6 +261,12 @@ def test_cli_invalid_window_exits_non_zero():
 def client():
     app.config["TESTING"] = True
     with app.test_client() as client:
+        # Perform initial login so existing client fixture requests are authenticated
+        login_res = client.post("/api/login", json={"email": "operator@noc.internal", "password": "demo"})
+        if login_res.status_code == 200:
+            token = login_res.get_json().get("token")
+            if token:
+                client.environ_base["HTTP_AUTHORIZATION"] = f"Bearer {token}"
         yield client
 
 
@@ -450,22 +456,107 @@ def test_vercel_environment_writable_paths(monkeypatch):
 
 
 def test_auth_and_user_endpoints(client):
-    # Test Login
-    login_res = client.post("/api/login", json={"email": "operator@noc.internal", "password": "any"})
+    # Test Login with valid credentials
+    login_res = client.post("/api/login", json={"email": "operator@noc.internal", "password": "demo"})
     assert login_res.status_code == 200
     login_data = login_res.get_json()
     assert login_data["success"] is True
     assert "token" in login_data
+    assert login_data["user"]["email"] == "operator@noc.internal"
+    assert "password_hash" not in login_data["user"]
 
-    # Test /api/me
+    # Test Login with wrong password
+    bad_pass_res = client.post("/api/login", json={"email": "operator@noc.internal", "password": "wrong-password-123"})
+    assert bad_pass_res.status_code == 401
+    assert bad_pass_res.get_json()["success"] is False
+
+    # Test Login with missing password
+    no_pass_res = client.post("/api/login", json={"email": "operator@noc.internal"})
+    assert no_pass_res.status_code == 401
+
+    # Test Login with missing email
+    no_email_res = client.post("/api/login", json={"password": "demo"})
+    assert no_email_res.status_code == 400
+
+    # Test Login with non-existent user
+    non_user_res = client.post("/api/login", json={"email": "unknown@domain.internal", "password": "demo"})
+    assert non_user_res.status_code == 401
+
+    # Test /api/me with valid token
     me_res = client.get("/api/me")
     assert me_res.status_code == 200
     me_data = me_res.get_json()
     assert me_data["authenticated"] is True
+    assert me_data["user"]["email"] == "operator@noc.internal"
+
+    # Test /api/me with different user token (e.g. Maria Garcia / Supervisor)
+    sup_login = client.post("/api/login", json={"email": "supervisor@noc.internal", "password": "demo"}).get_json()
+    sup_token = sup_login["token"]
+    sup_me_res = client.get("/api/me", headers={"Authorization": f"Bearer {sup_token}"})
+    assert sup_me_res.status_code == 200
+    assert sup_me_res.get_json()["user"]["email"] == "supervisor@noc.internal"
+    assert sup_me_res.get_json()["user"]["name"] == "Maria Garcia"
+
+    # Test /api/me without authentication (fresh unauthenticated test client)
+    with app.test_client() as unauth_client:
+        unauth_me = unauth_client.get("/api/me")
+        assert unauth_me.status_code == 401
+        assert unauth_me.get_json()["authenticated"] is False
+
+        # Test /api/me with invalid / tampered token
+        bad_token_me = unauth_client.get("/api/me", headers={"Authorization": "Bearer fake.tampered.token"})
+        assert bad_token_me.status_code == 401
 
     # Test Logout
     logout_res = client.post("/api/logout")
     assert logout_res.status_code == 200
+
+
+def test_protected_endpoints_require_auth():
+    """Verify that unauthenticated requests to protected endpoints return 401."""
+    with app.test_client() as unauth_client:
+        # /api/generate
+        gen_res = unauth_client.post("/api/generate", json={
+            "shift_start": "2026-09-03T17:00:00+05:30",
+            "shift_end": "2026-09-03T20:00:00+05:30"
+        })
+        assert gen_res.status_code == 401
+
+        # /api/reports
+        rep_res = unauth_client.get("/api/reports")
+        assert rep_res.status_code == 401
+
+        # /api/reports/<id>
+        rep_detail_res = unauth_client.get("/api/reports/1")
+        assert rep_detail_res.status_code == 401
+
+        # /api/data/tickets
+        tck_res = unauth_client.get("/api/data/tickets")
+        assert tck_res.status_code == 401
+
+        # /api/data/incidents
+        inc_res = unauth_client.get("/api/data/incidents")
+        assert inc_res.status_code == 401
+
+
+def test_debug_env_endpoint_security(client):
+    """Verify that /api/debug-env is protected and returns 404 in non-debug mode."""
+    # Unauthenticated request returns 401
+    with app.test_client() as unauth_client:
+        res = unauth_client.get("/api/debug-env")
+        assert res.status_code == 401
+
+    # Authenticated in non-debug mode (default) returns 404
+    app.debug = False
+    res_non_debug = client.get("/api/debug-env")
+    assert res_non_debug.status_code == 404
+
+    # Authenticated in debug mode returns 200
+    app.debug = True
+    res_debug = client.get("/api/debug-env")
+    assert res_debug.status_code == 200
+    assert "headers" in res_debug.get_json()
+    app.debug = False
 
 
 def test_html_pages_render(client):
