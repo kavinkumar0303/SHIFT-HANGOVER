@@ -248,8 +248,9 @@
 
       document.querySelectorAll(".preset-account-btn").forEach(btn => {
         btn.addEventListener("click", () => {
-          emailInput.value = btn.getAttribute("data-email");
-          passwordInput.value = btn.getAttribute("data-pass");
+          emailInput.value = btn.getAttribute("data-email") || "";
+          passwordInput.value = btn.getAttribute("data-pass") || "demo";
+          errorBox.classList.add("hidden");
         });
       });
 
